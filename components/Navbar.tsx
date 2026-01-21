@@ -25,7 +25,7 @@ export default function Navbar() {
           <Link href="/" className="text-white font-semibold hover:underline">
             Beranda
           </Link> 
-          <Link href="/kegiatan" className="text-white font-semibold hover:underline">
+          <Link href="/ramadhan" className="text-white font-semibold hover:underline">
             Info Ramadhan
           </Link>
           <Link href="/kegiatan" className="text-white font-semibold hover:underline">

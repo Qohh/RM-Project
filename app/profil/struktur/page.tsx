@@ -15,12 +15,12 @@ export default function StruturKepengurusan(){
                     <CardHeader className="border-b">
                     <CardTitle className="text-3xl font-bold text-center text-primary">STRUKTUR KEPENGURUSAN</CardTitle>
                     <CardDescription className="text-sm text-center text-gray-600">
-                        Struktur Pengurus yang Mengemban Amanah dalam Menjalankan Visi dan Misi Organisasi.
+                        Struktur Pengurus Periode 2026-2027
                     </CardDescription>
                     </CardHeader>
                     <CardContent className="mt-6 text-gray-600">
                           <div className="overflow-x-auto">
-       <div className="overflow-x-auto space-y-6">
+       <div className="overflow-x-auto space-y-10 mx-12 my-4">
         {pengurus.map((bidang, i) => (
             <table
             key={i}
@@ -29,7 +29,7 @@ export default function StruturKepengurusan(){
             <thead className="bg-gray-100">
                 <tr>
                 <th
-                    className="border px-4 py-2 text-center font-semibold"
+                    className="border px-4 py-2 text-center font-semibold bg-primary text-white"
                     colSpan={2}
                 >
                     {bidang.bidang}
