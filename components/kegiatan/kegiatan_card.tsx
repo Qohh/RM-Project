@@ -9,7 +9,6 @@ import Image from "next/image"
 import { CalendarDays } from "lucide-react"
 import Link from "next/link"
 
-
 type KegiatanCardProps = {
     id: number
     judul: string
