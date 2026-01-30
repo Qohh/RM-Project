@@ -450,8 +450,6 @@ export default function RamadhanPage() {
 
 <footer className="bg-primary text-white pb-5 pt-7">
   <div className="max-w-6xl mx-auto grid grid-cols-2 divide-x divide-white/30 pb-5">
-
-    {/* KIRI — Tentang Kami (Rata Kanan) */}
     <section className="flex justify-end pr-10">
       <div className="flex flex-col gap-2 text-right items-end">
 
@@ -477,7 +475,6 @@ export default function RamadhanPage() {
       </div>
     </section>
 
-    {/* KANAN — Kontak (Rata Kiri) */}
     <section className="flex justify-start pl-10">
       <div className="flex flex-col gap-2 text-left">
 
