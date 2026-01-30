@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { MapPin, Phone, Mail } from "lucide-react"
 
 type PrayerTimes = {
   Fajr: string
@@ -55,7 +56,7 @@ function getRamadhanInfo() {
     return {
       type: "before",
       value: Math.abs(diffDays),
-      title: `H-${Math.abs(diffDays)} Menuju Ramadhan`,
+      title: `H-${Math.abs(diffDays)} Menuju Ramadhan🌙`,
       masehi,
       hijriyah
     }
@@ -193,11 +194,27 @@ if (!prayerTimes) {
 export default function RamadhanPage() {
   const ramadhan = getRamadhanInfo()
   const { mode, hours, minutes, seconds, testHour, setTestHour, prayerTimes, currentTime, nextPrayer, nextMinutes } = useRamadhanCountdown()
+  const [showImage, setShowImage] = useState<string | null>(null)
+  useEffect(() => {
+    if (showImage) {
+      document.body.style.overflow = "hidden"
+      document.body.style.touchAction = "none"
+    } else {
+      document.body.style.overflow = ""
+      document.body.style.touchAction = ""
+    }
 
+    return () => {
+      document.body.style.overflow = ""
+      document.body.style.touchAction = ""
+    }
+  }, [showImage])
+
+  const availableDays = [1] // cuma hari 1 yang terbuka
 
   return (
-    <div className="p-5">
-    <div className="flex gap-4 items-stretch pb-5">
+    <div>
+    <div className="flex gap-7 items-stretch px-7 py-7">
       <div className="flex flex-col gap-4 flex-1">
         <section className="bg-primary p-5 rounded-xl">
           <h1 className="text-center font-bold text-3xl text-white">
@@ -209,7 +226,6 @@ export default function RamadhanPage() {
         </section>
 
         <section className="flex flex-col items-center justify-center bg-white border-2 border-primary rounded-xl text-center h-24 ">
-          {/* COUNTDOWN */}
           {mode === "countdown" && (
             <>
               <h2 className="text-xl font-semibold">Menuju Waktu Berbuka</h2>
@@ -221,14 +237,12 @@ export default function RamadhanPage() {
             </>
           )}
 
-          {/* IFTAR MESSAGE */}
           {mode === "iftar" && (
             <h2 className="text-3xl font-bold">
               🌙 Selamat Berbuka Puasa 🌙
             </h2>
           )}
 
-          {/* QUOTE MODE */}
           {mode === "quote" && (
             //bisa tambah komponen khusus ayat al-qur'an
             <p className="italic text-sm px-5">
@@ -308,21 +322,198 @@ export default function RamadhanPage() {
           </div>
         ))}
       </div>
-
-      {/* FOOTER */}
-      <p className="text-xs text-gray-500 pt-2">
-        Sumber: Aladhan API · GMT+07
-      </p>
     </section>
     </div>
 
-    <div className="bg-white h-screen">
-      <section>
-      <p className="text-xs text-gray-500 pt-2">
-        Sumber: Aladhan API · GMT+07
-      </p>
+  <div className="pb-5">
+    <div className="flex flex-wrap justify-center gap-2 px-6">
+      {Array.from({ length: 30 }).map((_, i) => {
+        const day = i + 1
+        const unlocked = availableDays.includes(day)
+
+        return (
+          <button
+            key={day}
+            disabled={!unlocked}
+            className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-semibold transition-all
+              ${unlocked 
+                ? "bg-primary text-white shadow-md hover:scale-110 cursor-pointer" 
+                : "bg-gray-200 text-gray-400 cursor-not-allowed"
+              }
+            `}
+          >
+            {day}
+          </button>
+        )
+      })}
+    </div>
+  </div>
+
+  <div className="bg-white h-auto pb-10">
+    <div className="flex gap-2">
+
+      <div className="flex flex-1 items-center justify-center p-10">
+        <img 
+          src="/ramadhan/dokumentasi-iftar.jpeg" 
+          alt="Dokumentasi Iftar" 
+          className="rounded-xl aspect-square object-cover border-primary border-2 shadow-lg"
+        />
+      </div>
+
+      <div className="flex flex-col gap-2 py-14">
+        <div className="flex flex-col items-center">
+          <div>
+            <p className=" font-bold text-3xl py-5">Total Jama'ah Iftar</p>
+          </div>
+          <div className="bg-primary/10 border-2 border-primary rounded-xl p-3 text-center w-48 shadow-lg">
+            <p className="text-4xl font-bold text-black tracking-wider">
+              0275
+            </p>
+            <p className="text-xs text-gray-500">
+              Jamaah
+            </p>
+          </div>
+        </div> 
+
+        <section className="flex">
+          <div className="flex flex-col gap-2 flex-1 items-center">
+            <h1 className="text-center text-xl font-bold">Akhwat</h1>
+            <div className="border-2 border-primary rounded-xl p-3 text-center w-48 shadow-lg">
+            <p className="text-4xl font-bold text-black tracking-wider">
+              0114
+            </p>
+            <p className="text-xs text-gray-500">
+              Jamaah
+            </p>
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-2 flex-1 items-center pl-5">
+            <h1 className="text-center text-xl font-bold">Ikhwan</h1>
+            <div className="border-2 border-primary rounded-xl p-3 text-center w-48 shadow-lg">
+            <p className="text-4xl font-bold text-black tracking-wider">
+              0161
+            </p>
+            <p className="text-xs text-gray-500">
+              Jamaah
+            </p>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <div className="flex-1 flex items-center justify-center p-14">
+        <img 
+          src="/ramadhan/total-jamaah-iftar.jpeg" 
+          alt="Dokumentasi Iftar" 
+          className="rounded-xl aspect-square object-cover border-primary border-2 shadow-lg"
+        />
+      </div>
+
+    </div>  
+    <h2 className="text-center text-base font-normal text-gray-500 italic">
+      "Selamat menunaikan ibadah puasa Ramadhan, semoga Allah menerima ibadah kita di bulan yang penuh berkah ini✨."
+    </h2>
+  </div>
+
+  <div className="flex gap-16 p-10">
+    <section className="flex flex-row bg-white border-primary border-2 w-1/2 rounded-xl justify-center items-center px-10">
+      <div className="flex flex-col">
+        <h2 className="text-center font-bold text-3xl py-6">
+          Info Kajian Besok
+        </h2>
+     
+        <img 
+          src="/KJB.jpeg" 
+          alt="Info-Kajian-Besok" 
+          onClick={() => setShowImage("/KJB.jpeg")}
+          className="rounded-xl aspect-square object-contain pb-10 cursor-pointer hover:opacity-80"
+        />
+      </div>
     </section>
-    </div>
-    </div>
+
+<section className="flex flex-row bg-white border-primary border-2 w-1/2 rounded-xl justify-center items-center px-10">
+      <div className="flex flex-col">
+        <h2 className="text-center font-bold text-3xl py-6">
+          Info Donasi Iftar
+        </h2>
+     
+        <img 
+          src="/ramadhan/info-donasi.jpeg" 
+          alt="Info-Donasi-Iftar" 
+          onClick={() => setShowImage("/ramadhan/info-donasi.jpeg")}
+          className="rounded-xl aspect-square object-contain pb-10 cursor-pointer hover:opacity-80"
+        />
+      </div>
+    </section>
+  </div>
+
+<footer className="bg-primary text-white pb-5 pt-7">
+  <div className="max-w-6xl mx-auto grid grid-cols-2 divide-x divide-white/30 pb-5">
+
+    {/* KIRI — Tentang Kami (Rata Kanan) */}
+    <section className="flex justify-end pr-10">
+      <div className="flex flex-col gap-2 text-right items-end">
+
+        <h1 className="text-2xl font-bold">Tentang Kami</h1>
+        <hr className="border-white/40 w-20 ml-auto" />
+
+        <img
+          src="/logo-rm.png" 
+          alt="Logo-RM"
+          width={60}
+          height={60}
+          className="py-2"
+        />
+
+        <h2 className="text-base font-semibold">
+          Remaja Mujahidin Kalimantan Barat
+        </h2>
+
+        <p className="text-white/80 text-sm max-w-xs">
+          Organisasi Pengembangan Potensi dan Pembinaan Remaja Islam.
+        </p>
+
+      </div>
+    </section>
+
+    {/* KANAN — Kontak (Rata Kiri) */}
+    <section className="flex justify-start pl-10">
+      <div className="flex flex-col gap-2 text-left">
+
+        <h1 className="text-2xl font-bold">Kontak</h1>
+        <hr className="border-white/40 w-20" />
+
+        <p className="flex gap-2 items-center py-2">
+          <MapPin className="w-5 h-5 shrink-0"/> Sekretariat : Komplek Masjid Raya Mujahidin, Jl.Mujahidin/Ahmad Yani, Pontianak, Kalimantan Barat.</p>
+        <p className="flex gap-2 items-center pb-2">
+          <Phone className="w-5 h-5 shrink-0"/> 0851-1721-2479</p>
+        <p className="flex gap-2 items-center pb-2">
+          <Mail className="w-5 h-5 shrink-0"/> remajamujahidn.kalbar@gmail.com</p>
+
+      </div>
+    </section>
+  </div>
+      <hr className="border-white/30" />
+      <div className="container mx-auto px-4 md:px-6 pt-5 text-center text-muted-foreground text-sm text-white">
+        © {new Date().getFullYear()} Remaja Mujahidin Kalimantan Barat
+      </div> 
+</footer>
+
+ {showImage && (
+  <div 
+    className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-[9999] overscroll-none"
+    onClick={() => setShowImage(null)}
+  >
+    <img 
+      src={showImage}
+      onClick={(e) => e.stopPropagation()}
+      className="max-h-[90vh] max-w-[90vw] rounded-xl shadow-2xl object-contain transition-transform duration-300 hover:scale-105"
+    />
+  </div>
+)}
+
+  </div>
+    
   )
 }
