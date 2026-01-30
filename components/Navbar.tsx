@@ -124,17 +124,32 @@ export default function Navbar() {
                 </li>
                 <li>
                   <a
-                    href="https://wa.me/6281234567890?text=Halo%20saya%20ingin%20bertanya"
+                    href="https://wa.me/6285117212479?text=Halo%20saya%20ingin%20bertanya"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center gap-2 px-4 py-2 hover:bg-gray-100"
                   > <Image
                       src="/icons/logo-whatsapp.png"
-                      alt="Youtube"
+                      alt="Whatsapp"
                       width={20}
                       height={20}
                     />
                     WhatsApp
+                  </a>
+                </li>
+                <li>
+                  <a
+                  href="https://www.tiktok.com/@remajamujahidinkalbar"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 px-4 py-2 hover:bg-gray-100"
+                  ><Image
+                      src="/icons/logo-tiktok.png"
+                      alt="Tiktok"
+                      width={22}
+                      height={22}
+                    />
+                    TikTok
                   </a>
                 </li>
               </ul>
