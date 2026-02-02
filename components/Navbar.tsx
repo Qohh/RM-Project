@@ -7,8 +7,7 @@ export default function Navbar() {
     <header className="w-full border-b bg-gradient-to-br from-primary-light via-primary to-primary-dark sticky top-0 z-50">
       <nav className="mx-auto flex max-w-7xl items-center justify-between px-6 py-3">
         
-        {/* KIRI: LOGO + NAMA */}
-        <Link href="/" className="flex items-center gap-2">
+        <div className="flex items-center gap-2">
           <Image
             src="/logo-rm.png"
             alt="Logo Organisasi"
@@ -18,9 +17,8 @@ export default function Navbar() {
           <span className="text-2xl font-semibold text-white">
             Remaja Mujahidin Kalimantan Barat
           </span>
-        </Link>
+        </div> 
 
-        {/* KANAN: MENU + AVATAR */}
         <div className="flex items-center gap-6">
           <Link href="/" className="text-white font-semibold hover:underline">
             Beranda
@@ -156,7 +154,8 @@ export default function Navbar() {
             </div>
           </div>
 
-          <div className="h-9 w-9 overflow-hidden rounded-full border">
+        <Link href="/login">
+          <div className="h-9 w-9 overflow-hidden rounded-full border cursor-pointer">
             <Image
               src="/profile.png"
               alt="User"
@@ -164,6 +163,7 @@ export default function Navbar() {
               height={36}
             />
           </div>
+        </Link>
         </div>
       </nav>
 
