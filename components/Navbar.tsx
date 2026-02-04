@@ -1,8 +1,21 @@
+"use client";
+
 import Link from "next/link";
 import Image from "next/image";
 import { ChevronDown } from "lucide-react";
+import { usePathname } from "next/navigation";
+
 
 export default function Navbar() {
+  const pathname = usePathname();
+
+  const navItems = [
+    { name: "Beranda", href: "/" },
+    { name: "Info Ramadhan", href: "/ramadhan" },
+    { name: "Kegiatan", href: "/kegiatan" },
+    { name: "Berita", href: "/berita" },
+  ];
+
   return (
     <header className="w-full border-b bg-gradient-to-br from-primary-light via-primary to-primary-dark sticky top-0 z-50">
       <nav className="mx-auto flex max-w-7xl items-center justify-between px-6 py-3">
@@ -20,18 +33,17 @@ export default function Navbar() {
         </div> 
 
         <div className="flex items-center gap-6">
-          <Link href="/" className="text-white font-semibold hover:underline">
-            Beranda
-          </Link> 
-          <Link href="/ramadhan" className="text-white font-semibold hover:underline">
-            Info Ramadhan
-          </Link>
-          <Link href="/kegiatan" className="text-white font-semibold hover:underline">
-            Kegiatan
-          </Link>
-          <Link href="/berita" className="text-white font-semibold hover:underline">
-            Berita
-          </Link>
+                    {navItems.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={`text-white font-semibold relative after:absolute after:left-0 after:-bottom-1 after:h-0.5 after:bg-white after:transition-all after:duration-300 ${
+                pathname === item.href ? "after:w-full" : "after:w-0 hover:after:w-full"
+              }`}
+            >
+              {item.name}
+            </Link>
+          ))}
 
           <div className="relative group">
             <button className="flex items-center gap-1 text-white font-semibold hover:underline">

@@ -16,8 +16,6 @@ body {
   animation: marquee 20s linear infinite;
 }
 
-
-
 @layer base {
   :root {
     --background: 0 0% 100%;
