@@ -6,6 +6,7 @@ type Berita = {
   judul: string
   image: string
   tanggal: string
+  konten: string
 }
 
 type Props = {
@@ -20,49 +21,60 @@ export default function BeritaTerbaru({
   layout = "row",
 }: Props) {
   return (
-    <Link href={`/berita/${item.id}`}>
+
       <div
         className={`
-          border rounded-xl hover:bg-muted transition cursor-pointer
+          border rounded-xl hover:bg-muted transition 
           ${layout === "row" ? "flex gap-3" : "flex flex-col"}
           ${variant === "large" ? "p-4 gap-4" : "p-3"}
         `}
       >
         {/* GAMBAR */}
         <div
-          className={`relative shrink-0 rounded-lg overflow-hidden
+          className={`relative shrink-0 rounded-lg overflow-hidden aspect-video
             ${layout === "col"
-              ? "w-full h-40"
+              ? "w-full"
               : variant === "large"
-                ? "w-32 h-24"
-                : "w-20 h-16"}
+                ? "w-32"
+                : "w-20"}
           `}
         >
           <Image
             src={item.image}
             alt={item.judul}
             fill
-            className="object-contain"
+            className="object-cover"
           />
         </div>
 
+
         {/* TEKS */}
-        <div className={`text-sm ${layout === "col" ? "space-y-1" : ""}`}>
-          <p className="font-semibold line-clamp-2">
-            {item.judul}
-          </p>
+<div className={`text-sm ${layout === "col" ? "space-y-2" : "space-y-1"}`}>
 
-          <p className="text-xs text-muted-foreground">
-            {item.tanggal}
-          </p>
+  
+  <p className="text-xs text-muted-foreground">
+    {item.tanggal}
+  </p>
+  <p className="font-semibold line-clamp-4">
+    {item.judul}
+  </p>
+  
+  {variant === "large" && (
+    <p className="text-sm text-muted-foreground line-clamp-4">
+      {item.konten}
+    </p>
+  )}
 
-          {variant === "large" && (
-            <span className="inline-block text-primary text-sm font-medium mt-1">
-              Lihat detail →
-            </span>
-          )}
-        </div>
+  <Link href={`/berita/${item.id}`}>
+    {variant === "large" && (
+      <span className="inline-block text-primary text-sm font-medium cursor-pointer hover:underline">
+        Lihat detail →
+      </span>
+    )}
+  </Link>
+</div>
+
       </div>
-    </Link>
+
   )
 }

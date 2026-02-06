@@ -1,3 +1,4 @@
+import { Calendar } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
 
@@ -20,29 +21,28 @@ export default function KegiatanTerbaru({
   layout = "row",
 }: Props) {
   return (
-    <Link href={`/kegiatan/${item.id}`}>
       <div
         className={`
-          border rounded-xl hover:bg-muted transition cursor-pointer
+          border rounded-xl hover:bg-muted transition
           ${layout === "row" ? "flex gap-3" : "flex flex-col"}
-          ${variant === "large" ? "p-4 gap-4" : "p-3"}
+          ${variant === "large" ? "p-4 gap-4": "p-3"}
         `}
       >
         {/* GAMBAR */}
         <div
-          className={`relative shrink-0 rounded-lg overflow-hidden
+          className={`relative shrink-0 rounded-lg overflow-hidden aspect-square
             ${layout === "col"
-              ? "w-full h-40"
+              ? "w-full"
               : variant === "large"
-                ? "w-32 h-24"
-                : "w-20 h-16"}
+                ? "w-32"
+                : "w-20"}
           `}
         >
           <Image
             src={item.image}
             alt={item.judul}
             fill
-            className="object-contain"
+            className="object-cover"
           />
         </div>
 
@@ -51,18 +51,21 @@ export default function KegiatanTerbaru({
           <p className="font-semibold line-clamp-2">
             {item.judul}
           </p>
-
-          <p className="text-xs text-muted-foreground">
+          
+          
+          <p className="flex text-xs text-muted-foreground items-center gap-1">
+            <Calendar className="w-4 h-4"/>
             {item.tanggal}
           </p>
 
+          <Link href={`/kegiatan/${item.id}`}>
           {variant === "large" && (
-            <span className="inline-block text-primary text-sm font-medium mt-1">
+            <span className="inline-block text-primary text-sm font-medium mt-1 cursor-pointer hover:underline">
               Lihat detail →
             </span>
           )}
-        </div>
+          </Link>
       </div>
-    </Link>
+      </div>
   )
 }

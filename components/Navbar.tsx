@@ -3,11 +3,17 @@
 import Link from "next/link";
 import Image from "next/image";
 import { ChevronDown } from "lucide-react";
+import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 
-
 export default function Navbar() {
-  const pathname = usePathname();
+const pathname = usePathname();
+const [isLogin, setIsLogin] = useState(false);
+
+useEffect(() => {
+  const status = localStorage.getItem("isLogin") === "true";
+  setIsLogin(status);
+}, []);
 
   const navItems = [
     { name: "Beranda", href: "/" },
@@ -166,16 +172,44 @@ export default function Navbar() {
             </div>
           </div>
 
-        <Link href="/login">
-          <div className="h-9 w-9 overflow-hidden rounded-full border cursor-pointer">
-            <Image
-              src="/profile.png"
-              alt="User"
-              width={36}
-              height={36}
-            />
-          </div>
-        </Link>
+{isLogin && (
+  <Link
+    href="/anggota"
+    className={`text-white font-semibold ${
+      pathname.startsWith("/anggota") ? "underline" : ""
+    }`}
+  >
+    Anggota RM
+  </Link>
+)}
+
+{!isLogin ? (
+  <Link href="/login">
+    <div className="h-9 w-9 overflow-hidden rounded-full border cursor-pointer">
+      <Image src="/profile.png" alt="Login" width={36} height={36} />
+    </div>
+  </Link>
+) : (
+  <div className="relative group">
+    <div className="h-9 w-9 overflow-hidden rounded-full border cursor-pointer">
+      <Image src="/profile.png" alt="User" width={36} height={36} />
+    </div>
+
+    <div className="absolute right-0 mt-2 w-32 bg-white rounded-lg shadow border
+      opacity-0 invisible group-hover:opacity-100 group-hover:visible transition">
+      <button
+        onClick={() => {
+          localStorage.removeItem("isLogin");
+          window.location.href = "/";
+        }}
+        className="w-full px-4 py-2 text-left hover:bg-gray-100 text-sm"
+      >
+        Logout
+      </button>
+    </div>
+  </div>
+)}
+
         </div>
       </nav>
 
