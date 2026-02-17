@@ -2,6 +2,11 @@
 @tailwind components;
 @tailwind utilities;
 
+html, body {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
 body {
   background-color: #f0f9ff;
 }
@@ -87,8 +92,6 @@ body {
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
 }
-
-
 
 @layer base {
   * {

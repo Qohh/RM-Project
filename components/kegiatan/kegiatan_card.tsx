@@ -20,9 +20,9 @@ type KegiatanCardProps = {
 export default function KegiatanCard({ id, judul, deskripsi, tanggal, image }: KegiatanCardProps) {
   return (
     
-    <Card className="aspect-square flex flex-col shadow transition-all duration-300 hover:-translate-y-2 hover:shadow-xl">
-        <div className="p-2">
-            <div className="relative h-56 group">
+    <Card className="md:aspect-square flex flex-col shadow transition-all duration-300 hover:-translate-y-2 hover:shadow-xl">
+        <div className="pt-2">
+            <div className="relative h-36 md:h-56 group">
                 <Image
                 src={image}
                 alt={judul}
@@ -51,12 +51,13 @@ export default function KegiatanCard({ id, judul, deskripsi, tanggal, image }: K
             </div>
         </div>
       <CardHeader>
-        <CardTitle>{judul}</CardTitle>
         <CardDescription className="flex items-center gap-1">
-            <CalendarDays className="w-4 h-4"/> {tanggal}
+            <CalendarDays className="w-3 h-3"/> {tanggal}
         </CardDescription>
+        <CardTitle>{judul}</CardTitle>
+
       </CardHeader>
-      <CardContent className="flex-1 text-sm">
+      <CardContent className="hidden flex-1 text-sm">
         {deskripsi}
       </CardContent>
     </Card>

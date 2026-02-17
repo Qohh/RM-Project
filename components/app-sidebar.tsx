@@ -14,7 +14,7 @@ import {
 const sidebarItems = [
   {
     name: "Dashboard",
-    href: "/anggota",
+    href: "/anggota/dashboard",
     icon: LayoutDashboard,
   },
   {
@@ -26,11 +26,6 @@ const sidebarItems = [
     name: "Kegiatan",
     href: "/anggota/kegiatan",
     icon: CalendarDays,
-  },
-  {
-    name: "Dokumen",
-    href: "/anggota/dokumen",
-    icon: FileText,
   },
   {
     name: "Pengaturan",

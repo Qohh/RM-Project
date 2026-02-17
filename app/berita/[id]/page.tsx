@@ -26,9 +26,9 @@ export default async function BeritaDetailPage({ params }: PageProps) {
   return (
     <div>
     <div className="max-w-6xl mx-auto px-6 py-10">
-      <div className="flex gap-8">
+      <div className="flex flex-col lg:flex-row gap-8">
 
-        <div className="w-3/4 space-y-6">
+        <div className="w-full lg:w-3/4 space-y-6">
         <h1 className="flex gap-2 text-4xl font-bold items-center">
           {data.judul}
         </h1>
@@ -38,7 +38,7 @@ export default async function BeritaDetailPage({ params }: PageProps) {
             <span>{data.tanggal}</span>
           </div>
 
-          <div className="relative h-[400px]">
+          <div className="relative h-[200px] md:h-[400px]">
             <Image
               src={data.image}
               alt={data.judul}
@@ -47,11 +47,10 @@ export default async function BeritaDetailPage({ params }: PageProps) {
             />
           </div>
         </div>
-
-        {/* KANAN — KEGIATAN TERBARU */}
-        <aside className="w-1/4 space-y-4">
+        
+        <aside className="w-full lg:w-1/4 space-y-4">
           <h2 className="text-lg font-semibold">
-            Kegiatan Terbaru
+            Berita Terbaru
           </h2>
 
         {latestBerita.map(item => (

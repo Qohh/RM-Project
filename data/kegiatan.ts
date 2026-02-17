@@ -22,7 +22,7 @@ export const kegiatan = [
     },
     {
         id: 4,
-        judul: "Orientation & Leadership Training 1",
+        judul: "OLT 1",
         deskripsi: "Pendaftaran OLT 1 Angkatan 54",
         tanggal: "2026-01-16",
         image: "/kegiatan/OLT1.jpeg"

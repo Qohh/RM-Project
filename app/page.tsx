@@ -1,3 +1,6 @@
+"use client"
+
+import { useEffect, useState } from "react"
 import KegiatanCard from "@/components/kegiatan/kegiatan_card"
 import KegiatanSlider from "@/components/informasi_slider"
 import Informasi_slider from "@/components/informasi_slider"
@@ -9,6 +12,19 @@ import { berita } from "@/data/berita"
 import { Users, CalendarDays, BarChart3, CalendarCheck, ClipboardList } from "lucide-react"
 
 export default function BerandaPage() {
+    const images = [
+    "/Foto-Pengurus-Akhwat.png",
+    "/Foto-Pengurus-Ikhwan.png",
+    "/Foto-Pawai.png",
+  ]
+  const [currentIndex, setCurrentIndex] = useState(0)
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentIndex((prev) => (prev + 1) % images.length)
+    }, 3000)
+    return () => clearInterval(interval)
+  }, [])
+
   const latestKegiatan = kegiatan
     .sort((a, b) => new Date(b.tanggal).getTime() - new Date(a.tanggal).getTime())
     .slice(0, 2)
@@ -18,11 +34,11 @@ export default function BerandaPage() {
 
   return (
     <div>
-      <div>
-      <div className="flex pb-10">
-      <div className="flex flex-col w-2/3 relative pl-5 pt-5">
+      
+      <div className="flex flex-col md:flex-row pb-10">
+      <div className="flex flex-col w-full md:w-2/3 relative px-5 pt-5">
         <img
-          src="/Foto-Pengurus-Akhwat.png"
+          src={images[currentIndex]}
           alt="Foto Pengurus RM"
           className="w-full h-full object-cover rounded-xl"
         />
@@ -34,22 +50,25 @@ export default function BerandaPage() {
                     to-transparent"
         />
 
-        <div className="absolute inset-0 flex items-end p-6">
-          <h2 className="text-white text-4xl font-bold mb-6 ml-4">
-            Ahlan Wa Sahlan!
-          </h2>
+        <div className="absolute inset-0 flex items-start md:items-end p-6 pt-10 md:pb-6">
+        <h2 className="text-white text-xl sm:text-2xl md:text-4xl font-bold mb-6 ml-4">
+          Ahlan Wa Sahlan!
+        </h2>
         </div>
       </div>
 
-      <div className="flex flex-col w-1/3">
+      <div className="flex flex-col w-full md:w-1/3">
+
       <h1 className="text-center text-2xl font-bold pt-5">Informasi Terbaru</h1>
       <div className="mx-auto mt-2 mb-4 w-56 h-[2px] bg-primary rounded-full" />
         <Informasi_slider/>
       </div>
       </div>
 
-      <div className="flex gap-5 p-5">
-        <div className="flex flex-col w-1/2 bg-white rounded-xl">
+<div className="flex flex-col md:flex-row gap-5 p-5">
+
+<div className="flex flex-col w-full md:w-1/2 bg-white rounded-xl">
+
           <h1 className="text-center text-2xl font-bold pt-5">
             Kegiatan Terbaru
           </h1>
@@ -67,7 +86,8 @@ export default function BerandaPage() {
           </div>
         </div>
 
-        <div className="flex flex-col w-1/2 bg-white rounded-xl">
+<div className="flex flex-col w-full md:w-1/2 bg-white rounded-xl">
+
           <h1 className="text-center text-2xl font-bold pt-5">
             Berita Terbaru
           </h1>
@@ -94,7 +114,8 @@ export default function BerandaPage() {
 
     <div className="mx-auto mt-2 mb-6 w-56 h-[2px] bg-primary rounded-full" />
 
-    <div className="grid grid-cols-4 gap-6 text-center">
+<div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+
       
       {/* Hari ini */}
       <div className="rounded-xl border p-5 hover:shadow transition">
@@ -113,6 +134,7 @@ export default function BerandaPage() {
           Minggu ini
         </p>
       </div>
+      
 
       {/* Bulan ini */}
       <div className="rounded-xl border p-5 hover:shadow transition">
@@ -139,7 +161,8 @@ export default function BerandaPage() {
 {/* HIGHLIGHT ANGKA */}
 <div className="px-5 pb-14">
   <div className="bg-primary text-white rounded-xl p-8">
-    <div className="grid grid-cols-3 gap-6 text-center">
+<div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
+
 
       {/* Anggota */}
       <div>
@@ -171,8 +194,6 @@ export default function BerandaPage() {
     </div>
   </div>
 </div>
-
-      </div>
       <Footer/>
     </div>      
   )

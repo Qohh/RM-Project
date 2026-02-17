@@ -1,67 +1,29 @@
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
-import { pengurus } from "@/data/pengurus";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
+import PengurusSection from "@/components/pengurus/pengurus_card"
+import { pengurus } from "@/data/pengurus"
+import Footer from "@/components/footer"
 
-export default function StruturKepengurusan(){
-    return(
-        <>
-            <main className="px-40 py-6">
-                  <Card>
-                    <CardHeader className="border-b">
-                    <CardTitle className="text-3xl font-bold text-center text-primary">STRUKTUR KEPENGURUSAN</CardTitle>
-                    <CardDescription className="text-sm text-center text-gray-600">
-                        Struktur Pengurus Periode 2026-2027
-                    </CardDescription>
-                    </CardHeader>
-                    <CardContent className="mt-6 text-gray-600">
-                          <div className="overflow-x-auto">
-       <div className="overflow-x-auto space-y-10 mx-12 my-4">
-        {pengurus.map((bidang, i) => (
-            <table
-            key={i}
-            className="min-w-full border border-gray-300 text-sm font-sans"
-            >
-            <thead className="bg-gray-100">
-                <tr>
-                <th
-                    className="border px-4 py-2 text-center font-semibold bg-primary text-white"
-                    colSpan={2}
-                >
-                    {bidang.bidang}
-                </th>
-                </tr>
-            </thead>
-            <tbody>
-                {bidang.anggota.map((item, idx) => (
-                <tr key={idx}>
-                    <td className="border px-4 py-2 w-1/3 font-medium">
-                    {item.jabatan}
-                    </td>
-                    <td className="border px-4 py-2">
-                    {item.nama}
-                    </td>
-                </tr>
-                ))}
-            </tbody>
-            </table>
-        ))}
-        </div>
+export default function StrukturKepengurusan() {
+  return (
+    <div className="flex flex-col min-h-screen">
+      <main className="flex-1 px-4 sm:px-6 md:px-12 lg:px-24 xl:px-32 py-6 sm:py-8 md:py-10">
+        <Card className="w-full">
+          <CardHeader className="border-b px-4 sm:px-6">
+            <CardTitle className="text-xl sm:text-2xl md:text-3xl font-bold text-center text-primary">
+              STRUKTUR KEPENGURUSAN
+            </CardTitle>
+            <CardDescription className="text-xs sm:text-sm text-center text-gray-600">
+              Struktur Pengurus Periode 2026-2027
+            </CardDescription>
+          </CardHeader>
 
-        </div>
-                    </CardContent>
-                  </Card>
-            </main>
-          
-            <footer className="border-t">
-                <div className="container mx-auto px-4 md:px-6 py-6 text-center text-muted-foreground text-sm">
-                    © {new Date().getFullYear()} Remaja Mujahidin Kalimantan Barat.
-                </div>
-            </footer>
-        </>
-    )
+          <CardContent className="mt-6 sm:mt-8 md:mt-10 px-2 sm:px-4">
+            <PengurusSection data={pengurus} />
+          </CardContent>
+        </Card>
+      </main>
+
+      <Footer />
+    </div>
+  )
 }

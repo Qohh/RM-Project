@@ -1,7 +1,8 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
 import Footer from "@/components/footer"
+import { ramadhan_day } from "@/data/ramadhan"
 
 type PrayerTimes = {
   Fajr: string
@@ -25,7 +26,7 @@ function fixHijriMonth(text: string) {
 }
 
 function getRamadhanInfo() {
-  const RAMADHAN_START = new Date("2026-02-18")
+  const RAMADHAN_START = new Date("2026-02-07")
 
   const today = new Date()
 
@@ -174,7 +175,7 @@ if (!prayerTimes) {
   const maghrib = getTimeToday(prayerTimes.Maghrib)
   const isha = getTimeToday(prayerTimes.Isha)
 
-  const noon = new Date()
+  const noon = new Date(now)
   noon.setHours(12, 0, 0, 0)
 
   let mode: "quote" | "countdown" | "iftar" = "quote"
@@ -190,11 +191,22 @@ if (!prayerTimes) {
   return { mode, hours, minutes, seconds, testHour, setTestHour, prayerTimes, currentTime, nextPrayer, nextMinutes }
 }
 
-
 export default function RamadhanPage() {
   const ramadhan = getRamadhanInfo()
   const { mode, hours, minutes, seconds, testHour, setTestHour, prayerTimes, currentTime, nextPrayer, nextMinutes } = useRamadhanCountdown()
   const [showImage, setShowImage] = useState<string | null>(null)
+  const [activeDay, setActiveDay] = useState<number | null>(null)
+  const availableDays =
+  ramadhan.type === "ramadhan"
+    ? Array.from({ length: ramadhan.value }, (_, i) => i + 1)
+    : []
+
+  // ambil data sesuai hari aktif
+  const dayData = activeDay ? ramadhan_day[activeDay] : null  
+  const total = String(dayData?.total ?? 0).padStart(4, "0")
+  const ikhwan = String(dayData?.ikhwan ?? 0).padStart(4, "0")
+  const akhwat = String(dayData?.akhwat ?? 0).padStart(4, "0")
+
   useEffect(() => {
     if (showImage) {
       document.body.style.overflow = "hidden"
@@ -210,26 +222,34 @@ export default function RamadhanPage() {
     }
   }, [showImage])
 
-  const availableDays = [1] // cuma hari 1 yang terbuka
+  const initialized = useRef(false)
+
+  useEffect(() => {
+    if (!initialized.current && ramadhan.type === "ramadhan") {
+      setActiveDay(ramadhan.value)
+      initialized.current = true
+    }
+  }, [ramadhan])
 
   return (
     <div>
-    <div className="flex gap-7 items-stretch px-7 py-7">
+    <div className="flex flex-col lg:flex-row gap-7 items-stretch px-4 sm:px-7 py-3 md:py-7">
+
       <div className="flex flex-col gap-4 flex-1">
-        <section className="bg-primary p-5 rounded-xl">
+        <section className="bg-primary p-3 md:p-5 rounded-xl">
           <h1 className="text-center font-bold text-3xl text-white">
             {ramadhan.title}
           </h1>
-          <h2 className="text-white/90 text-base text-center mt-2">
+          <h2 className="text-white/90 text-sm md:text-base text-center mt-1">
             {ramadhan.masehi} • {ramadhan.hijriyah}
           </h2>
         </section>
 
-        <section className="flex flex-col items-center justify-center bg-white border-2 border-primary rounded-xl text-center h-24 ">
+        <section className="flex flex-col items-center justify-center bg-white border-2 border-primary rounded-xl text-center h-auto md:h-24 p-2">
           {mode === "countdown" && (
             <>
               <h2 className="text-xl font-semibold">Menuju Waktu Berbuka</h2>
-              <p className="text-4xl font-bold tracking-wider text-primary">
+              <p className="text-3xl md:text-4xl font-bold tracking-wider text-primary">
                 {String(hours).padStart(2, "0")}:
                 {String(minutes).padStart(2, "0")}:
                 {String(seconds).padStart(2, "0")}
@@ -238,18 +258,20 @@ export default function RamadhanPage() {
           )}
 
           {mode === "iftar" && (
-            <h2 className="text-3xl font-bold">
+            <h2 className="text-xl md:text-3xl font-bold">
               🌙 Selamat Berbuka Puasa 🌙
             </h2>
           )}
 
           {mode === "quote" && (
-            //bisa tambah komponen khusus ayat al-qur'an
-            <p className="italic text-sm px-5">
+          <div className="italic text-[10px] md:text-sm px-5">
+            <p className="hidden md:block">
               يَٰٓأَيُّهَا ٱلَّذِينَ ءَامَنُوا۟ كُتِبَ عَلَيْكُمُ ٱلصِّيَامُ كَمَا كُتِبَ عَلَى ٱلَّذِينَ مِن قَبْلِكُمْ لَعَلَّكُمْ تَتَّقُونَ
-              <br></br>
+            </p>
+            <p>
               "Hai orang-orang yang beriman, diwajibkan atas kamu berpuasa sebagaimana diwajibkan atas orang-orang sebelum kamu agar kamu bertakwa."
             </p>
+          </div>
           )}
         </section>
 
@@ -284,7 +306,8 @@ export default function RamadhanPage() {
     */}
     </div>
 
-    <section className="bg-white rounded-xl border-2 border-primary p-5 h-46 flex flex-col justify-between">
+  <section className="hidden md:flex bg-white rounded-xl border-2 border-primary p-5 h-46 flex-col justify-between">
+
       <h2 className="text-xl font-semibold mb-2">Jadwal Sholat</h2>
       <p className="text-sm text-gray-600">
         Waktu sholat selanjutnya:
@@ -298,7 +321,8 @@ export default function RamadhanPage() {
       </h1>
 
       {/* GRID PRAYER */}
-      <div className="grid grid-cols-6 text-center gap-3 pt-2">
+      <div className="grid grid-cols-3 sm:grid-cols-6 text-center gap-3 pt-2">
+
         {[
           { label: "Subuh", key: "Fajr" },
           { label: "Terbit", key: "Sunrise" },
@@ -325,49 +349,64 @@ export default function RamadhanPage() {
     </section>
     </div>
 
-  <div className="pb-5">
-    <div className="flex flex-wrap justify-center gap-2 px-6">
+  <div className="pb-3">
+<div
+  className="
+    flex gap-2 px-4 overflow-x-auto pt-1 pb-2
+    md:flex-wrap md:justify-center md:overflow-visible
+    scrollbar-hide
+  "
+>
+
       {Array.from({ length: 30 }).map((_, i) => {
         const day = i + 1
         const unlocked = availableDays.includes(day)
 
         return (
           <button
-            key={day}
-            disabled={!unlocked}
-            className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-semibold transition-all
-              ${unlocked 
-                ? "bg-primary text-white shadow-md hover:scale-110 cursor-pointer" 
-                : "bg-gray-200 text-gray-400 cursor-not-allowed"
-              }
-            `}
-          >
-            {day}
-          </button>
+          key={day}
+          disabled={!unlocked}
+          onClick={() => unlocked && setActiveDay(day)}
+          className={`
+  flex-shrink-0 w-7 h-7 md:w-6 md:h-6
+  rounded-full flex items-center justify-center
+  text-[10px] md:text-xs font-semibold transition-all
+  ${
+    !unlocked
+      ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+      : day === activeDay
+        ? "bg-white text-primary ring-2 ring-primary shadow-lg scale-110"
+        : "bg-primary text-white shadow-md hover:scale-110 cursor-pointer"
+  }
+`}
+
+        >
+          {day}
+        </button>
+
         )
       })}
     </div>
   </div>
 
   <div className="bg-white h-auto pb-10">
-    <div className="flex gap-2">
-
-      <div className="flex flex-1 items-center justify-center p-10">
+   <div className="flex flex-col lg:flex-row gap-6">
+      <div className="hidden md:flex flex-1 items-center justify-center p-10">
         <img 
-          src="/ramadhan/dokumentasi-iftar.jpeg" 
+          src={dayData?.images?.iftar ?? "/ramadhan/dokumentasi-iftar.jpeg"}
           alt="Dokumentasi Iftar" 
           className="rounded-xl aspect-square object-cover border-primary border-2 shadow-lg"
         />
       </div>
 
-      <div className="flex flex-col gap-2 py-14">
+      <div className="flex flex-col gap-2 md:py-14">
         <div className="flex flex-col items-center">
           <div>
-            <p className=" font-bold text-3xl py-5">Total Jama'ah Iftar</p>
+            <p className="font-bold text-3xl py-3 md:py-5">Total Jama'ah Iftar</p>
           </div>
-          <div className="bg-primary/10 border-2 border-primary rounded-xl p-3 text-center w-48 shadow-lg">
-            <p className="text-4xl font-bold text-black tracking-wider">
-              0275
+          <div className="bg-primary/10 border-2 border-primary rounded-xl p-2 md:p-3 text-center w-32 md:w-48 shadow-lg">
+            <p className="text-3xl md:text-4xl font-bold text-black tracking-wider">
+              {total}
             </p>
             <p className="text-xs text-gray-500">
               Jamaah
@@ -378,9 +417,9 @@ export default function RamadhanPage() {
         <section className="flex">
           <div className="flex flex-col gap-2 flex-1 items-center">
             <h1 className="text-center text-xl font-bold">Akhwat</h1>
-            <div className="border-2 border-primary rounded-xl p-3 text-center w-48 shadow-lg">
-            <p className="text-4xl font-bold text-black tracking-wider">
-              0114
+            <div className="border-2 border-primary rounded-xl p-3 text-center w-32 md:w-48 shadow-lg">
+            <p className="text-3xl md:text-4xl font-bold text-black tracking-wider">
+              {akhwat}
             </p>
             <p className="text-xs text-gray-500">
               Jamaah
@@ -390,9 +429,9 @@ export default function RamadhanPage() {
 
           <div className="flex flex-col gap-2 flex-1 items-center pl-5">
             <h1 className="text-center text-xl font-bold">Ikhwan</h1>
-            <div className="border-2 border-primary rounded-xl p-3 text-center w-48 shadow-lg">
-            <p className="text-4xl font-bold text-black tracking-wider">
-              0161
+            <div className="border-2 border-primary rounded-xl p-3 text-center w-32 md:w-48 shadow-lg">
+            <p className="text-3xl md:text-4xl font-bold text-black tracking-wider">
+              {ikhwan}
             </p>
             <p className="text-xs text-gray-500">
               Jamaah
@@ -404,20 +443,21 @@ export default function RamadhanPage() {
 
       <div className="flex-1 flex items-center justify-center p-14">
         <img 
-          src="/ramadhan/total-jamaah-iftar.jpeg" 
+           src={dayData?.images?.total ?? "/ramadhan/total-jamaah-iftar.jpeg"}
           alt="Dokumentasi Iftar" 
           className="rounded-xl aspect-square object-cover border-primary border-2 shadow-lg"
         />
       </div>
 
     </div>  
-    <h2 className="text-center text-base font-normal text-gray-500 italic">
+    <h2 className="text-center text-xs md:text-base font-normal text-gray-500 italic px-3">
       "Selamat menunaikan ibadah puasa Ramadhan, semoga Allah menerima ibadah kita di bulan yang penuh berkah ini✨."
     </h2>
   </div>
 
-  <div className="flex gap-16 p-10">
-    <section className="flex flex-row bg-white border-primary border-2 w-1/2 rounded-xl justify-center items-center px-10">
+<div className="flex flex-col md:flex-row gap-6 md:gap-16 p-4 md:p-10">
+
+    <section className="flex flex-row bg-white border-primary border-2 w-full md:w-1/2 rounded-xl justify-center items-center px-10">
       <div className="flex flex-col">
         <h2 className="text-center font-bold text-3xl py-6">
           Info Kajian Besok
@@ -427,12 +467,12 @@ export default function RamadhanPage() {
           src="/KJB.jpeg" 
           alt="Info-Kajian-Besok" 
           onClick={() => setShowImage("/KJB.jpeg")}
-          className="rounded-xl aspect-square object-contain pb-10 cursor-pointer hover:opacity-80"
+          className="rounded-xl aspect-square object-contain pb-5 md:pb-10 cursor-pointer hover:opacity-80"
         />
       </div>
     </section>
 
-<section className="flex flex-row bg-white border-primary border-2 w-1/2 rounded-xl justify-center items-center px-10">
+<section className="flex flex-row bg-white border-primary border-2 w-full md:w-1/2 rounded-xl justify-center items-center px-10">
       <div className="flex flex-col">
         <h2 className="text-center font-bold text-3xl py-6">
           Info Donasi Iftar
@@ -442,7 +482,7 @@ export default function RamadhanPage() {
           src="/ramadhan/info-donasi.jpeg" 
           alt="Info-Donasi-Iftar" 
           onClick={() => setShowImage("/ramadhan/info-donasi.jpeg")}
-          className="rounded-xl aspect-square object-contain pb-10 cursor-pointer hover:opacity-80"
+          className="rounded-xl aspect-square object-contain pb-5 md:pb-10 cursor-pointer hover:opacity-80"
         />
       </div>
     </section>

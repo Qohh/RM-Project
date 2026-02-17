@@ -21,29 +21,36 @@ export default function BeritaTerbaru({
   layout = "row",
 }: Props) {
   return (
+    <Link
+      href={`/berita/${item.id}`}
+      className="block group"
+    >
 
       <div
         className={`
           border rounded-xl hover:bg-muted transition 
-          ${layout === "row" ? "flex gap-3" : "flex flex-col"}
+          ${layout === "row" 
+          ? "flex flex-col sm:flex-row gap-3" 
+          : "flex flex-col"}
           ${variant === "large" ? "p-4 gap-4" : "p-3"}
         `}
       >
         {/* GAMBAR */}
         <div
           className={`relative shrink-0 rounded-lg overflow-hidden aspect-video
-            ${layout === "col"
-              ? "w-full"
-              : variant === "large"
-                ? "w-32"
-                : "w-20"}
+          ${layout === "col"
+  ? "w-full"
+  : variant === "large"
+    ? "w-full sm:w-32"
+    : "w-full sm:w-20"}
+
           `}
         >
           <Image
             src={item.image}
             alt={item.judul}
             fill
-            className="object-cover"
+            className="object-contain"
           />
         </div>
 
@@ -75,6 +82,6 @@ export default function BeritaTerbaru({
 </div>
 
       </div>
-
+</Link>
   )
 }

@@ -14,18 +14,19 @@ export default function KegiatanPage() {
 
   return (
     <div className="max-w-7xl mx-auto p-5 space-y-5">
-      <div className="flex items-center justify-between">
+<div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+
       <div className="flex flex-col ml-5">
-      <h1 className="text-4xl font-bold text-primary text-left mb-1">
+      <h1 className="text-2xl md:text-4xl font-bold text-primary text-left mb-1">
         SEMUA KEGIATAN
       </h1>
-      <span className="flex flex-row gap-2 text-base text-muted-foreground items-center">
-        <Newspaper className="w-5 h-5"/>
+      <span className="flex flex-row gap-2 text-xs md:text-base text-muted-foreground items-center ">
+        <Newspaper className="w-3 md:w-5 h-3 md:h-5"/>
         {filteredKegiatan.length} berita tersedia
       </span>
       </div>
       
-      <div className="relative w-full max-w-md">
+      <div className="relative w-2/3 md:w-full md:max-w-md md:mx-0 pl-5 md:pl-0 md:pr-5">
         <input
           type="text"
           placeholder="Cari berita..."
@@ -34,16 +35,16 @@ export default function KegiatanPage() {
           className="
             w-full
             border border-primary
-            rounded-2xl
+            rounded-xl md:rounded-2xl
             pl-4 pr-12
-            py-2
+            py-1 md:p-3
             outline-none
             focus:ring-2 focus:ring-primary
           "
         />
         <Search
           className="
-            absolute right-4 top-1/2 -translate-y-1/2
+            absolute right-4 md:right-8 top-1/2 -translate-y-1/2
             w-5 h-5
             text-muted-foreground
             pointer-events-none
@@ -53,7 +54,7 @@ export default function KegiatanPage() {
     </div>
 
 
-        <div className="grid grid-cols-4 gap-6">
+<div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
         {filteredKegiatan.length > 0 ? (
           filteredKegiatan.map((item) => (
             <KegiatanCard
@@ -66,7 +67,7 @@ export default function KegiatanPage() {
             />
           ))
         ) : (
-          <p className="col-span-4 text-center text-gray-500 italic">
+          <p className="col-span-2 lg:col-span-4 text-center text-gray-500 italic">
             Tidak ada kegiatan ditemukan
           </p>
         )}

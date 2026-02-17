@@ -21,6 +21,10 @@ export default function KegiatanTerbaru({
   layout = "row",
 }: Props) {
   return (
+    <Link
+      href={`/kegiatan/${item.id}`}
+      className="block group"
+    >
       <div
         className={`
           border rounded-xl hover:bg-muted transition
@@ -67,5 +71,6 @@ export default function KegiatanTerbaru({
           </Link>
       </div>
       </div>
+      </Link>
   )
 }
