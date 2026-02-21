@@ -25,7 +25,8 @@ export const ramadhan_day: Record<
     total: 0,
     ikhwan: 0,
     akhwat: 0,
-
+    images: {
+      iftar: "/tes.jpg",
+      total: "/ramadhan/total-jamaah-iftar.jpeg",
   },
-
-}
+}}
