@@ -26,7 +26,7 @@ function fixHijriMonth(text: string) {
 }
 
 function getRamadhanInfo() {
-  const RAMADHAN_START = new Date("2026-02-07")
+  const RAMADHAN_START = new Date("2026-02-19")
 
   const today = new Date()
 
@@ -464,7 +464,7 @@ export default function RamadhanPage() {
         </h2>
      
         <img 
-          src="/KJB.jpeg" 
+           src={dayData?.images?.kajian ?? "/ramadhan/kajian-day2.jpeg"}
           alt="Info-Kajian-Besok" 
           onClick={() => setShowImage("/KJB.jpeg")}
           className="rounded-xl aspect-square object-contain pb-5 md:pb-10 cursor-pointer hover:opacity-80"
@@ -479,7 +479,7 @@ export default function RamadhanPage() {
         </h2>
      
         <img 
-          src="/ramadhan/info-donasi.jpeg" 
+          src="/ramadhan/donasi.jpeg" 
           alt="Info-Donasi-Iftar" 
           onClick={() => setShowImage("/ramadhan/info-donasi.jpeg")}
           className="rounded-xl aspect-square object-contain pb-5 md:pb-10 cursor-pointer hover:opacity-80"

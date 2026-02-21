@@ -8,25 +8,41 @@ export const ramadhan_day: Record<
     images?: {
       iftar?: string
       total?: string
+      kajian?: string
     }
   }
 > = {
   1: {
-    total: 275,
-    ikhwan: 161,
-    akhwat: 0,
+    total: 221,
+    ikhwan: 100,
+    akhwat: 121,
     images: {
-      iftar: "/ramadhan/dokumentasi-iftar.jpeg",
-      total: "/ramadhan/total-jamaah-iftar.jpeg",
+      iftar: "/ramadhan/gogreen.jpeg",
+      total: "/ramadhan/ji-day1.jpeg",
+      kajian: "/ramadhan/kajian-day2.jpeg"
     },
   },
 
   2: {
+    total: 255,
+    ikhwan: 126,
+    akhwat: 129,
+    images: {
+      iftar: "/ramadhan/gogreen.jpeg",
+      total: "/ramadhan/ji-day2.jpeg",
+      kajian: "ramadhan/kajian-day3.jpeg"
+    },
+  },
+
+  3: {
     total: 0,
     ikhwan: 0,
     akhwat: 0,
     images: {
-      iftar: "/tes.jpg",
-      total: "/ramadhan/total-jamaah-iftar.jpeg",
+      iftar: "/ramadhan/gogreen.jpeg",
+      total: "/ramadhan/ji-day2.jpeg",
+      kajian: "ramadhan/kajian-day3.jpeg"
+    },
   },
-}}
+
+}
