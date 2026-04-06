@@ -4,22 +4,32 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
+import { supabase } from "@/lib/supabase";
 
 export function LoginForm() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
     setIsLoading(true);
 
-    setTimeout(() => {
-      localStorage.setItem("isLogin", "true");
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
 
-      router.push("/");
-    }, 1000);
-  };;
+    if (error) {
+      alert("Login gagal: " + error.message);
+      setIsLoading(false);
+    } else {
+      alert("Login berhasil!");
+      router.push("/"); // redirect ke dashboard/home
+    }
+  };
 
   return (
     <form onSubmit={handleLogin} className="space-y-6 pt-4">
@@ -28,10 +38,10 @@ export function LoginForm() {
         <Input
           id="email"
           type="email"
-          placeholder="user@example.com"
+          placeholder="user@gmail.com"
           required
-          disabled={isLoading}
-          defaultValue="user@example.com"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
         />
       </div>
 
@@ -43,7 +53,8 @@ export function LoginForm() {
           placeholder="••••••••"
           required
           disabled={isLoading}
-          defaultValue="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
         />
       </div>
 

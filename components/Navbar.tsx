@@ -5,16 +5,32 @@ import Image from "next/image";
 import { ChevronDown, Menu, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
+import { supabase } from "@/lib/supabase";
 
 export default function Navbar() {
 const pathname = usePathname();
 const isProfilPage = pathname.startsWith("/profil");
-
-const [isLogin, setIsLogin] = useState(false);
+const [user, setUser] = useState(null);
 
 useEffect(() => {
-  const status = localStorage.getItem("isLogin") === "true";
-  setIsLogin(status);
+  // ambil session saat pertama load
+  const getSession = async () => {
+    const { data } = await supabase.auth.getSession();
+    setUser(data.session?.user ?? null);
+  };
+
+  getSession();
+
+  // listen perubahan login/logout
+  const { data: listener } = supabase.auth.onAuthStateChange(
+    (_event, session) => {
+      setUser(session?.user ?? null);
+    }
+  );
+
+  return () => {
+    listener.subscription.unsubscribe();
+  };
 }, []);
 
   const navItems = [
@@ -62,7 +78,7 @@ useEffect(() => {
 
 
 <div className="hidden md:flex items-center gap-6">
-                    {navItems.map((item) => (
+          {navItems.map((item) => (
             <Link
               key={item.href}
               href={item.href}
@@ -74,6 +90,14 @@ useEffect(() => {
             </Link>
           ))}
 
+          {user && (
+            <Link
+              href="/rm"
+              className="text-white font-semibold relative after:absolute after:left-0 after:-bottom-1 after:h-0.5 after:bg-white after:transition-all after:duration-300 after:w-0 hover:after:w-full"
+            >
+              RM
+            </Link>
+          )}
 
           <div className="relative group">
             <button className="flex items-center gap-1 text-white font-semibold hover:underline">
@@ -200,11 +224,23 @@ useEffect(() => {
             </div>
           </div>
 
+{user ? (
+  <button
+    onClick={async () => {
+      await supabase.auth.signOut();
+      location.reload();
+    }}
+    className="h-9 w-9 overflow-hidden rounded-full border cursor-pointer"
+  >
+    <Image src="/profile.png" alt="Logout" width={36} height={36} />
+  </button>
+) : (
   <Link href="/login">
     <div className="h-9 w-9 overflow-hidden rounded-full border cursor-pointer">
       <Image src="/profile.png" alt="Login" width={36} height={36} />
     </div>
   </Link>
+)}
   </div>
   </div>
 </nav>
