@@ -13,7 +13,7 @@ export function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const handleLogin = async (e) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
 
@@ -32,7 +32,7 @@ export function LoginForm() {
   };
 
   return (
-    <form onSubmit={handleLogin} className="space-y-6 pt-4">
+    <form onSubmit={handleSubmit} className="space-y-6 pt-4">
       <div className="space-y-2">
         <Label htmlFor="email">Email</Label>
         <Input
