@@ -2,15 +2,34 @@
 
 import { useState } from "react"
 import KegiatanCard from "@/components/kegiatan/kegiatan_card"
-import { kegiatan } from "@/data/kegiatan"
 import { Search, Newspaper } from "lucide-react"
+import { supabase } from "@/lib/supabase"
+import { useEffect } from "react"
 
 export default function KegiatanPage() {
   const [search, setSearch] = useState("")
+  const [dataKegiatan, setDataKegiatan] = useState<any[]>([])
 
-  const filteredKegiatan = kegiatan.filter((item) =>
+  const filteredKegiatan = dataKegiatan.filter((item) =>
     item.judul.toLowerCase().includes(search.toLowerCase())
   )
+  
+  useEffect(() => {
+  const fetchData = async () => {
+    const { data, error } = await supabase
+      .from("kegiatan")
+      .select("*")
+      .order("tanggal", { ascending: false })
+
+    if (error) {
+      console.error("Error:", error)
+    } else {
+      setDataKegiatan(data)
+    }
+  }
+
+  fetchData()
+}, [])
 
   return (
     <div className="max-w-7xl mx-auto p-5 space-y-5">
@@ -22,7 +41,7 @@ export default function KegiatanPage() {
       </h1>
       <span className="flex flex-row gap-2 text-xs md:text-base text-muted-foreground items-center ">
         <Newspaper className="w-3 md:w-5 h-3 md:h-5"/>
-        {filteredKegiatan.length} berita tersedia
+        {filteredKegiatan.length} kegiatan tersedia
       </span>
       </div>
       
