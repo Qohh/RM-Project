@@ -6,11 +6,12 @@ import { ChevronDown, Menu, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { supabase } from "@/lib/supabase";
+import { User } from '@supabase/supabase-js';
 
 export default function Navbar() {
 const pathname = usePathname();
 const isProfilPage = pathname.startsWith("/profil");
-const [user, setUser] = useState(null);
+const [user, setUser] = useState<User | null>(null);
 
 useEffect(() => {
   // ambil session saat pertama load
