@@ -1,0 +1,18 @@
+[33m1258e7d[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmaster[m[33m, [m[1;31morigin/master[m[33m, [m[1;31morigin/HEAD[m[33m)[m ganti supabase ke laravel (login)
+[33md088993[m halaman RM & sudah bisa upload kegiatan
+[33mfcc1477[m perbaiki error 2
+[33m52e90eb[m perbaiki error null user
+[33m484c167[m hubungkan supabase & auth
+[33m6f1533b[m tes2-day3
+[33m9e53b50[m tes deploy
+[33m3bb63e3[m Hampir Fix Hosting
+[33md27d130[m halaman beranda
+[33mb4ee8c3[m halaman beranda dan berita
+[33mb57019d[m halaman login
+[33m485f0d6[m perbaikan halaman kegiatan dan detailnya
+[33m47786a0[m Navbar dan tambah gambar
+[33m5eb1f01[m Halaman info ramadhan naqo-fix
+[33mcce57ae[m halaman info ramadhan
+[33m66b6137[m Halaman Kegiatan dan Detail kegiatan part 1
+[33mbe42f1f[m Update struktur project dan halaman profil
+[33m065d0ad[m Initial commit from Create Next App

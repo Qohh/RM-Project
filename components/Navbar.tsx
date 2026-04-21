@@ -16,8 +16,8 @@ const [user, setUser] = useState<User | null>(null);
 useEffect(() => {
   // ambil session saat pertama load
   const getSession = async () => {
-    const { data } = await supabase.auth.getSession();
-    setUser(data.session?.user ?? null);
+    const { data } = await supabase.auth.getUser();
+    setUser(data.user ?? null);
   };
 
   getSession();
@@ -36,7 +36,7 @@ useEffect(() => {
 
   const navItems = [
     { name: "Beranda", href: "/" },
-    { name: "Info Ramadhan", href: "/ramadhan" },
+    //{ name: "Info Ramadhan", href: "/ramadhan" },
     { name: "Kegiatan", href: "/kegiatan" },
     { name: "Berita", href: "/berita" },
   ];

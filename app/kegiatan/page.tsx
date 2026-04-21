@@ -19,6 +19,7 @@ export default function KegiatanPage() {
     const { data, error } = await supabase
       .from("kegiatan")
       .select("*")
+      .eq("status", "publish") 
       .order("tanggal", { ascending: false })
 
     if (error) {
@@ -82,7 +83,7 @@ export default function KegiatanPage() {
               judul={item.judul}
               deskripsi={item.deskripsi}
               tanggal={item.tanggal}
-              image={item.image}
+              image={item.gambar}
             />
           ))
         ) : (

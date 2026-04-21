@@ -2,19 +2,43 @@
 
 import { useState } from "react"
 import BeritaCard from "@/components/berita/berita_card"
-import { berita } from "@/data/berita"
 import { Search, Newspaper } from "lucide-react"
+import { supabase } from "@/lib/supabase"
+import { useEffect } from "react"
 
 export default function BeritaPage() {
   const [search, setSearch] = useState("")
+  const [dataBerita, setDataBerita] = useState<any[]>([])
 
-  const filteredBerita = berita.filter((item) =>
+  const filteredBerita = dataBerita.filter((item) =>
     item.judul.toLowerCase().includes(search.toLowerCase())
   )
+  
+  useEffect(() => {
+  const fetchData = async () => {
+    const { data, error } = await supabase
+  .from("berita")
+  .select(`
+    *,
+    kategori(nama)
+  `)
+  .eq("status", "publish") 
+  .order("tanggal", { ascending: false })
+
+    if (error) {
+      console.error("Error:", error)
+    } else {
+      setDataBerita(data)
+    }
+  }
+
+  fetchData()
+}, [])
 
   return (
-  <div className="max-w-7xl mx-auto px-5 py-5 space-y-5">
+    <div className="max-w-7xl mx-auto p-5 space-y-5">
 <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+
       <div className="flex flex-col ml-5">
       <h1 className="text-2xl md:text-4xl font-bold text-primary text-left mb-1">
         SEMUA BERITA
@@ -25,7 +49,7 @@ export default function BeritaPage() {
       </span>
       </div>
       
-     <div className="relative w-2/3 md:w-full md:max-w-md md:mx-0 pl-5 md:pl-0 md:pr-5">
+      <div className="relative w-2/3 md:w-full md:max-w-md md:mx-0 pl-5 md:pl-0 md:pr-5">
         <input
           type="text"
           placeholder="Cari berita..."
@@ -52,24 +76,25 @@ export default function BeritaPage() {
       </div>
     </div>
 
-   <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-      {filteredBerita.length > 0 ? (
-        filteredBerita.map((item) => (
-          <BeritaCard
-            key={item.id}
-            id={item.id}
-            judul={item.judul}
-            tanggal={item.tanggal}
-            image={item.image}
-          />
-        ))
-      ) : (
-        <p className="col-span-2 lg:col-span-4 text-center text-gray-500 italic">
-          Tidak ada berita ditemukan
-        </p>
-      )}
-    </div>
 
-  </div>
-)
+<div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+        {filteredBerita.length > 0 ? (
+          filteredBerita.map((item) => (
+            <BeritaCard
+              key={item.id}
+              id={item.id}
+              judul={item.judul}
+              tanggal={item.tanggal}
+              kategori={item.kategori?.nama}
+              image={item.gambar}
+            />
+          ))
+        ) : (
+          <p className="col-span-2 lg:col-span-4 text-center text-gray-500 italic">
+            Tidak ada berita ditemukan
+          </p>
+        )}
+        </div>
+    </div>
+  )
 }

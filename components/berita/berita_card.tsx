@@ -14,6 +14,7 @@ type BeritaCardProps = {
   judul: string
   tanggal: string
   image: string
+  kategori: string
 }
 
 export default function BeritaCard({
@@ -21,17 +22,16 @@ export default function BeritaCard({
   judul,
   tanggal,
   image,
+  kategori
 }: BeritaCardProps) {
   return (
     <Card className="flex flex-col shadow transition-all duration-300 hover:-translate-y-2 hover:shadow-xl">
       <div className="p-2">
         <div className="relative aspect-video rounded-lg overflow-hidden group">
-          <Image
-            src={image}
+          <img
+            src={image || "/placeholder.png"}
             alt={judul}
-            fill
-            className="object-cover"
-            sizes="(max-width: 768px) 100vw, 50vw"
+            
           />
 
           <div
@@ -58,17 +58,24 @@ export default function BeritaCard({
         </div>
       </div>
 
-      <CardHeader>
-        <CardDescription className="flex items-center gap-2">
-          <CalendarDays className="w-4 h-4" />
-          {tanggal}
-        </CardDescription>
-        <CardTitle className="line-clamp-4 leading-relaxed">
-          {judul}
-        </CardTitle>
+<CardHeader className="space-y-2">
 
+  <div className="flex items-center justify-between">
+    <span className="bg-primary text-white text-xs px-2 py-1 rounded-full">
+      {kategori}
+    </span>
 
-      </CardHeader>
+    <div className="flex items-center gap-1 text-sm text-muted-foreground">
+      <CalendarDays className="w-5 h-5" />
+      {tanggal}
+    </div>
+  </div>
+
+  <CardTitle className="line-clamp-4 leading-relaxed">
+    {judul}
+  </CardTitle>
+
+</CardHeader>
     </Card>
   )
 }

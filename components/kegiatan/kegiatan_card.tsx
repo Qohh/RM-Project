@@ -23,11 +23,10 @@ export default function KegiatanCard({ id, judul, deskripsi, tanggal, image }: K
     <Card className="md:aspect-square flex flex-col shadow transition-all duration-300 hover:-translate-y-2 hover:shadow-xl">
         <div className="pt-2">
             <div className="relative h-36 md:h-56 group">
-                <Image
-                src={image}
+                <img
+                src={image || "/placeholder.png"}
                 alt={judul}
-                fill
-                className="object-contain rounded-none"
+                className="w-full h-full object-cover"
                 />
 
                 <div className="
