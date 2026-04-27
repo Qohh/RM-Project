@@ -37,11 +37,13 @@ export default function BeritaPage() {
   const [isi, setIsi] = useState("");
   const [tanggal, setTanggal] = useState("");
   const [images, setImages] = useState<File[]>([]);
+  const [oldImages, setOldImages] = useState<string[]>([]);
   const [kategoriList, setKategoriList] = useState<any[]>([]);
   const [kategoriId, setKategoriId] = useState("");
   const [kategoriFilter, setKategoriFilter] = useState("all");
   const [filter, setFilter] = useState<"all" | "publish" | "draft">("all");
   const [search, setSearch] = useState("");
+
   const [errors, setErrors] = useState({
     judul: false,
     tanggal: false,
@@ -86,19 +88,6 @@ const fetchKategori = async () => {
 
   // ➕ tambah data
  const tambahBerita = async (status: "publish" | "draft") => {
- const newErrors = {
-  judul: !judul,
-  isi: !isi,
-  kategori: !kategoriId,
-  gambar: images.length === 0,
-  tanggal: !tanggal,
-};
-
-setErrors(newErrors);
-
-if (Object.values(newErrors).some(Boolean)) {
-  return;
-}
   const imageUrls: string[] = [];
 
   for (const img of images) {
@@ -122,7 +111,7 @@ if (Object.values(newErrors).some(Boolean)) {
         judul,
         isi,
         tanggal,
-        gambar: imageUrls, // ✅ ini yang benar
+        gambar: imageUrls,
         kategori_id: Number(kategoriId),
         status,
       },
@@ -142,7 +131,7 @@ if (Object.values(newErrors).some(Boolean)) {
     title: "Berhasil!",
     description: "Berita berhasil dipublikasikan.",
     action: (
-      <CheckCircle className="text-white w-6 h-6" />
+      <CheckCircle className="text-green-500 w-6 h-6" />
     ),
   });
 } else {
@@ -159,7 +148,8 @@ if (Object.values(newErrors).some(Boolean)) {
   setIsi("");
   setTanggal("");
   setKategoriId("");
-  setImages([]); // ✅ reset array
+  setImages([]); 
+  setOldImages([]);
   fetchData();
 };
 
@@ -185,18 +175,78 @@ const [editStatus, setEditStatus] = useState<"publish" | "draft" | null>(null);
 
 const handleEdit = (item: any) => {
   setEditId(item.id);
-  setEditStatus(item.status); // 🔥 penting
+  setEditStatus(item.status);
+  setOldImages([]);
   setJudul(item.judul);
   setIsi(item.isi);
   setTanggal(item.tanggal);
   setKategoriId(String(item.kategori_id));
+  let parsedImages: string[] = [];
+
+  try {
+    parsedImages = Array.isArray(item.gambar)
+      ? item.gambar
+      : JSON.parse(item.gambar);
+  } catch {
+    parsedImages = item.gambar ? [item.gambar] : [];
+  }
+
+  setOldImages(parsedImages);
+  
 };
 
 const handleSubmit = async (status: "publish" | "draft") => {
+  const newErrors = {
+    judul: !judul,
+    isi: !isi,
+    kategori: !kategoriId,
+    tanggal: !tanggal,
+    gambar: images.length === 0 && oldImages.length === 0,
+  };
+
+  setErrors(newErrors);
+
+  if (Object.values(newErrors).some(Boolean)) {
+    toast({
+      title: "Form belum lengkap",
+      description: "Harap isi semua data sebelum melanjutkan.",
+      variant: "destructive",
+    });
+    return;
+  }
+
   if (editId) {
     const finalStatus =
       editStatus === "publish" ? "publish" : status; 
-      // 🔥 publish tetap publish, draft bisa berubah
+    
+
+      const imageUrls: string[] = [];
+        for (const img of images) {
+        const fileName = `${Date.now()}-${img.name}`;
+    
+        await supabase.storage
+          .from("kegiatan")
+          .upload(fileName, img);
+    
+        const { data } = supabase.storage
+          .from("kegiatan")
+          .getPublicUrl(fileName);
+    
+        imageUrls.push(data.publicUrl);
+      }
+    
+       let finalImages = oldImages;
+    
+    // kalau ada gambar baru
+    if (imageUrls.length > 0) {
+      // kalau oldImages kosong → berarti replace semua
+      if (oldImages.length === 0) {
+        finalImages = imageUrls;
+      } else {
+        // kalau masih ada oldImages → berarti tambah
+        finalImages = [...oldImages, ...imageUrls];
+      }
+    }
 
     const { error } = await supabase
   .from("berita")
@@ -205,6 +255,7 @@ const handleSubmit = async (status: "publish" | "draft") => {
     isi,
     tanggal,
     kategori_id: Number(kategoriId),
+    gambar: finalImages,
     status: finalStatus,
   })
   .eq("id", editId);
@@ -221,7 +272,7 @@ if (error) {
 // 🔥 SUCCESS (dibedakan)
 if (finalStatus === "publish") {
   toast({
-    title: "Berhasil",
+    title: "Berhasil!",
     description: "Berita berhasil diperbarui dan dipublikasikan.",
     action: (
       <CheckCircle className="text-green-500 w-6 h-6" />
@@ -239,6 +290,7 @@ if (finalStatus === "publish") {
 
 setEditId(null);
 setEditStatus(null);
+setOldImages([]);
 
   } else {
     await tambahBerita(status);
@@ -250,6 +302,7 @@ setEditStatus(null);
   setTanggal("");
   setKategoriId("");
   setImages([]);
+  setOldImages([]);
   fetchData();
 };
 
@@ -395,14 +448,20 @@ const filteredData = data.filter((item) => {
   *Upload minimal 1 gambar, maksimal 5 gambar.
 </p>
 
-  {images.length > 0 && (
+  {oldImages.length > 0 && (
   <div className="mt-3 space-y-2">
-    {images.map((img, index) => (
+    {oldImages.map((img, index) => (
       <div
         key={index}
         className="flex justify-between items-center border p-3 rounded-lg"
       >
-        <span className="text-sm truncate">{img.name}</span>
+        {/* nama file */}
+        <span className="text-sm truncate">
+           {(() => {
+              const fileName = decodeURIComponent(img.split("/").pop() || "");
+              return fileName.replace(/^\d+-/, "");
+            })()}
+        </span>
 
         <div className="flex gap-3">
           <button
@@ -441,7 +500,7 @@ const filteredData = data.filter((item) => {
       {/* TEXTAREA FULL */}
       <div className="space-y-1">
   <textarea
-    placeholder="Isi"
+    placeholder="Masukkan isi berita"
     value={isi}
     onChange={(e) => setIsi(e.target.value)}
     className={`w-full px-3 p-2 border rounded-lg outline-none

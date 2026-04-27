@@ -33,7 +33,7 @@ export default function KegiatanPage() {
 }, [])
 
   return (
-    <div className="max-w-7xl mx-auto p-5 space-y-5">
+    <div className="max-w-7xl mx-auto mt-24 p-5 space-y-5">
 <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
 
       <div className="flex flex-col ml-5">
@@ -83,7 +83,7 @@ export default function KegiatanPage() {
               judul={item.judul}
               deskripsi={item.deskripsi}
               tanggal={item.tanggal}
-              image={item.gambar}
+              image={item.gambar?.[0]}
             />
           ))
         ) : (

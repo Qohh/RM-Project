@@ -112,7 +112,7 @@ const fetchData = async (mode: "admin" | "publik" = "admin") => {
     title: "Berhasil!",
     description: "Kegiatan berhasil dipublikasikan.",
     action: (
-      <CheckCircle className="text-white w-6 h-6" />
+      <CheckCircle className="text-green-500 w-6 h-6" />
     ),
   });
 } else {
