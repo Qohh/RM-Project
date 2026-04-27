@@ -33,7 +33,7 @@ export default function BerandaPage() {
     .slice(0, 2)
 
   return (
-    <div>
+    <div className="mt-28">
       
       <div className="flex flex-col md:flex-row pb-10">
       <div className="flex flex-col w-full md:w-2/3 relative px-5 pt-5">

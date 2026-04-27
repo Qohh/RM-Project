@@ -2,11 +2,23 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { ChevronDown, Menu, X } from "lucide-react";
+import { ChevronDown, Menu, X, LayoutDashboard, LogOut } from "lucide-react";
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { User } from '@supabase/supabase-js';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 export default function Navbar() {
 const pathname = usePathname();
@@ -44,11 +56,12 @@ useEffect(() => {
   const [openMenu, setOpenMenu] = useState<string | null>(null);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [openSubmenu, setOpenSubmenu] = useState<string | null>(null);
-
+  const name =
+    user?.user_metadata?.name || user?.email?.split("@")[0] || "User";
 
   return (
     <>
-    <header className="w-full border-b bg-gradient-to-br from-primary-light via-primary to-primary-dark sticky top-0 z-50">
+    <header className="w-full fixed top-0 left-0 z-50 border-b bg-gradient-to-br from-primary-light via-primary to-primary-dark">
      <nav className="w-full px-4 md:px-6 py-3">
 
 <div className="flex items-center justify-between w-full">
@@ -90,15 +103,6 @@ useEffect(() => {
               {item.name}
             </Link>
           ))}
-
-          {user && (
-            <Link
-              href="/rm"
-              className="text-white font-semibold relative after:absolute after:left-0 after:-bottom-1 after:h-0.5 after:bg-white after:transition-all after:duration-300 after:w-0 hover:after:w-full"
-            >
-              RM
-            </Link>
-          )}
 
           <div className="relative group">
             <button className="flex items-center gap-1 text-white font-semibold hover:underline">
@@ -226,22 +230,85 @@ useEffect(() => {
           </div>
 
 {user ? (
-  <button
+        // =============================
+        // ✅ SUDAH LOGIN → DROPDOWN
+        // =============================
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button className="h-9 w-9 overflow-hidden rounded-full border cursor-pointer">
+              <Image src="/profile.png" alt="Profile" width={36} height={36} />
+            </button>
+          </DropdownMenuTrigger>
+
+          <DropdownMenuContent
+            align="end"
+            className="w-64 p-3 rounded-xl shadow-lg"
+          >
+            {/* HEADER */}
+            <div className="flex flex-col items-center text-center p-5 rounded-lg bg-muted">
+              <Image
+                src="/profile.png"
+                alt="Profile"
+                width={60}
+                height={60}
+                className="rounded-full mb-2"
+              />
+              <p className="font-semibold text-sm">{name}</p>
+              <p className="text-xs text-muted-foreground">
+                {user?.email}
+              </p>
+            </div>
+
+            {/* MENU */}
+<div className="mt-2">
+  {/* Dashboard */}
+  <DropdownMenuItem asChild>
+    <Link href="/rm" className="cursor-pointer">
+    <LayoutDashboard className="w-4 h-4" />
+      Dashboard
+    </Link>
+  </DropdownMenuItem>
+
+  {/* Logout */}
+  <DropdownMenuItem
     onClick={async () => {
-      await supabase.auth.signOut();
-      location.reload();
+      await supabase.auth.signOut()
+      location.reload()
     }}
-    className="h-9 w-9 overflow-hidden rounded-full border cursor-pointer"
+    className="text-red-500 cursor-pointer"
   >
-    <Image src="/profile.png" alt="Logout" width={36} height={36} />
-  </button>
-) : (
-  <Link href="/login">
-    <div className="h-9 w-9 overflow-hidden rounded-full border cursor-pointer">
-      <Image src="/profile.png" alt="Login" width={36} height={36} />
-    </div>
-  </Link>
-)}
+    <LogOut className="w-4 h-4" />
+    Logout
+  </DropdownMenuItem>
+</div>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      ) : (
+        // =============================
+        // ❌ BELUM LOGIN → TOOLTIP LOGIN
+        // =============================
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Link href="/login">
+                <div className="h-9 w-9 overflow-hidden rounded-full border cursor-pointer flex items-center justify-center">
+                  <Image
+                    src="/profile.png"
+                    alt="Login"
+                    width={36}
+                    height={36}
+                  />
+                </div>
+              </Link>
+            </TooltipTrigger>
+
+            <TooltipContent>
+              Login
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      )}
+
   </div>
   </div>
 </nav>

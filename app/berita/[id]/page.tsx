@@ -1,9 +1,9 @@
 import Image from "next/image"
-import { berita } from "@/data/berita"
 import { CalendarDays, CircleChevronLeft, MapPin, Phone, Mail} from "lucide-react"
 import { notFound } from "next/navigation"
 import Link from "next/link"
 import BeritaTerbaru from "@/components/berita/berita_terbaru"
+import { supabase } from "@/lib/supabase"
 
 type PageProps = {
   params: Promise<{
@@ -15,16 +15,27 @@ export default async function BeritaDetailPage({ params }: PageProps) {
   const { id } = await params
   const numericId = Number(id)
 
-  const data = berita.find(item => item.id === numericId)
+  const { data, error } = await supabase
+    .from("berita")
+    .select(`
+      *,
+      kategori(nama)
+    `)
+    .eq("id", id)
+    .single()
 
-  if (!data) notFound()
+  if (error || !data) notFound()
 
-  const latestBerita = berita
-    .filter(item => item.id !== numericId)
-    .slice(0, 3)
+  const { data: latestBerita } = await supabase
+  .from("berita")
+  .select("*")
+  .neq("id", id)
+  .eq("status", "publish")
+  .order("tanggal", { ascending: false })
+  .limit(3)
 
   return (
-    <div>
+    <div className="mt-24">
     <div className="max-w-6xl mx-auto px-6 py-10">
       <div className="flex flex-col lg:flex-row gap-8">
 
@@ -39,11 +50,10 @@ export default async function BeritaDetailPage({ params }: PageProps) {
           </div>
 
           <div className="relative h-[200px] md:h-[400px]">
-            <Image
-              src={data.image}
+            <img
+              src={data.gambar?.[0]}
               alt={data.judul}
-              fill
-              className="object-contain object-left"
+              className="w-full h-full object-cover rounded-lg"
             />
           </div>
         </div>
@@ -53,14 +63,14 @@ export default async function BeritaDetailPage({ params }: PageProps) {
             Berita Terbaru
           </h2>
 
-        {latestBerita.map(item => (
-          <BeritaTerbaru
-            key={item.id}
-            item={item}
-            variant="small"
-            layout="row"
-          />
-        ))}
+        {latestBerita?.map(item => (
+            <BeritaTerbaru
+              key={item.id}
+              item={item}
+              variant="small"
+              layout="row"
+            />
+          ))}
         </aside>
 
       </div>

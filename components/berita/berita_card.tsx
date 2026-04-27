@@ -31,7 +31,6 @@ export default function BeritaCard({
           <img
             src={image || "/placeholder.png"}
             alt={judul}
-            
           />
 
           <div

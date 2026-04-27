@@ -6,31 +6,29 @@ import {
   LayoutDashboard,
   User,
   CalendarDays,
-  FileText,
-  Settings,
-  LogOut,
+  Newspaper,
 } from "lucide-react";
 
 const sidebarItems = [
   {
     name: "Dashboard",
-    href: "/anggota/dashboard",
+    href: "/rm",
     icon: LayoutDashboard,
   },
   {
-    name: "Profil Saya",
-    href: "/anggota/profil",
-    icon: User,
-  },
-  {
     name: "Kegiatan",
-    href: "/anggota/kegiatan",
+    href: "/rm/kegiatan",
     icon: CalendarDays,
   },
+    {
+    name: "Berita",
+    href: "/rm/berita",
+    icon: Newspaper,
+  },
   {
-    name: "Pengaturan",
-    href: "/anggota/pengaturan",
-    icon: Settings,
+    name: "Profil RM",
+    href: "/rm/profil",
+    icon: User,
   },
 ];
 
@@ -38,11 +36,11 @@ export default function AppSidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="w-64 min-h-screen bg-white border-r flex flex-col">
+    <aside className="w-64 h-[calc(100vh-96px)] fixed top-24 left-0 bg-white border-r flex flex-col overflow-y-auto">
       {/* Header */}
       <div className="px-6 py-4 border-b">
         <h2 className="text-lg font-semibold text-primary">
-          Area Anggota
+          Anggota
         </h2>
         <p className="text-sm text-gray-500">
           Remaja Mujahidin
@@ -53,8 +51,9 @@ export default function AppSidebar() {
       <nav className="flex-1 px-3 py-4 space-y-1">
         {sidebarItems.map((item) => {
           const isActive =
-            pathname === item.href ||
-            pathname.startsWith(item.href + "/");
+          item.href === "/rm"
+            ? pathname === "/rm"
+            : pathname.startsWith(item.href);
 
           const Icon = item.icon;
 
@@ -75,17 +74,6 @@ export default function AppSidebar() {
           );
         })}
       </nav>
-
-      {/* Footer */}
-      <div className="border-t p-3">
-        <button
-          className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium
-                     text-red-600 hover:bg-red-50 transition"
-        >
-          <LogOut className="w-5 h-5" />
-          Keluar
-        </button>
-      </div>
     </aside>
   );
 }
