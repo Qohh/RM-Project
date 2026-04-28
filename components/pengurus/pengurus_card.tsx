@@ -4,10 +4,12 @@ import Image from "next/image"
 import Footer from "../footer"
 
 type Anggota = {
-  jabatan?: string
+    jabatan?: {
+    nama: string
+  }
   nama: string
   angkatan?: string
-  foto?: string
+  gambar?: string
   riwayat?: string[]
 }
 
@@ -32,7 +34,7 @@ export default function PengurusSection({ data }: Props) {
     >
 
           {/* Judul Bidang */}
-          <h2 className="text-xl md:text-2xl font-bold text-center text-primary">
+          <h2 className="text-xl md:text-3xl font-bold text-center text-primary uppercase">
             {item.bidang}
           </h2>
 
@@ -48,12 +50,13 @@ export default function PengurusSection({ data }: Props) {
         
                 {/* FOTO (Persegi) */}
                 <div className="relative w-28 h-28 shrink-0">
-                  {anggota.foto ? (
+                  {anggota.gambar ? (
                     <Image
-                      src={anggota.foto}
+                      src={anggota.gambar}
                       alt={anggota.nama}
                       fill
                       className="object-cover rounded-md"
+                      unoptimized
                     />
                   ) : (
                     <div className="w-24 h-24 bg-primary/10 flex items-center justify-center text-lg md:text-2xl font-bold text-primary rounded-md">
@@ -70,12 +73,13 @@ export default function PengurusSection({ data }: Props) {
 
                     <p
                     className={`${
-                        ["Ketua", "Ketua Umum", "Sekretaris Umum", "Bendahara Umum 1", "Bendahara Umum 2"].includes(anggota.jabatan || "")
+                        ["Kepala Bidang", "Ketua Umum", "Sekretaris Umum", "Bendahara Umum 1", "Bendahara Umum 2"]
+.includes(anggota.jabatan?.nama || "")
                         ? "text-primary text-sm md:text-lg font-bold tracking-wide"
                         : "text-gray-600 text-sm md:text-base"
                     }`}
                     >
-                    {anggota.jabatan || "Anggota"}
+                    {anggota.jabatan?.nama || "Anggota"}
                     </p>
 
                     <div className="flex-grow" />

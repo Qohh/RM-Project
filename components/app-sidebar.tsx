@@ -7,7 +7,9 @@ import {
   User,
   CalendarDays,
   Newspaper,
+  LayoutPanelTop,
 } from "lucide-react";
+
 
 const sidebarItems = [
   {
@@ -24,6 +26,11 @@ const sidebarItems = [
     name: "Berita",
     href: "/rm/berita",
     icon: Newspaper,
+  },
+  {
+    name: "Data Pengurus",
+    href: "/rm/pengurus",
+    icon: LayoutPanelTop,
   },
   {
     name: "Profil RM",

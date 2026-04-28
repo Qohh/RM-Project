@@ -31,7 +31,7 @@ export default function VisiMisi() {
   }, [])
 
   return (
-    <>
+    <div className="mt-24">
       <main className="px-4 py-6 md:px-16 lg:px-40">
         <Card>
           <CardContent className="mt-6 text-gray-600">
@@ -90,6 +90,6 @@ export default function VisiMisi() {
           © {new Date().getFullYear()} Remaja Mujahidin Kalimantan Barat.
         </div>
       </footer>
-    </>
+    </div>
   )
 }

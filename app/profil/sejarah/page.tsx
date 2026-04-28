@@ -32,8 +32,8 @@ export default function Sejarah() {
   }, [])
 
   return (
-    <>
-      <main className="px-4 py-6 md:px-16 lg:px-40">
+    <div className="mt-24">
+      <main className="mt-24px-4 py-6 md:px-16 lg:px-40">
 
         <Card>
           <CardHeader className="border-b">
@@ -70,6 +70,6 @@ export default function Sejarah() {
           © {new Date().getFullYear()} Remaja Mujahidin Kalimantan Barat.
         </div>
       </footer>
-    </>
+    </div>
   )
 }
