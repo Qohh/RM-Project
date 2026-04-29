@@ -170,7 +170,7 @@ if (error) {
   fetchData();
 };
 
-const [editId, setEditId] = useState<number | null>(null);
+const [editId, setEditId] = useState<string | null>(null);
 const [editStatus, setEditStatus] = useState<"publish" | "draft" | null>(null);
 
 const handleEdit = (item: any) => {
@@ -225,11 +225,11 @@ const handleSubmit = async (status: "publish" | "draft") => {
         const fileName = `${Date.now()}-${img.name}`;
     
         await supabase.storage
-          .from("kegiatan")
+          .from("berita")
           .upload(fileName, img);
     
         const { data } = supabase.storage
-          .from("kegiatan")
+          .from("berita")
           .getPublicUrl(fileName);
     
         imageUrls.push(data.publicUrl);

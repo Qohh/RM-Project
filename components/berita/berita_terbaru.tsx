@@ -1,87 +1,76 @@
 import Image from "next/image"
 import Link from "next/link"
+import { CalendarDays } from "lucide-react"
 
 type Berita = {
   id: number
   judul: string
-  image: string
+  gambar: string[]
   tanggal: string
   konten: string
+  kategori?: {
+    nama: string
+  }
 }
 
 type Props = {
   item: Berita
   variant?: "small" | "large"
-  layout?: "row" | "col"
 }
 
 export default function BeritaTerbaru({
   item,
   variant = "small",
-  layout = "row",
 }: Props) {
   return (
-    <Link
-      href={`/berita/${item.id}`}
-      className="block group"
-    >
+    <Link href={`/berita/${item.id}`} className="block group">
+      <div className="border rounded-xl p-3 space-y-3 transition hover:bg-muted">
 
-      <div
-        className={`
-          border rounded-xl hover:bg-muted transition 
-          ${layout === "row" 
-          ? "flex flex-col sm:flex-row gap-3" 
-          : "flex flex-col"}
-          ${variant === "large" ? "p-4 gap-4" : "p-3"}
-        `}
-      >
-        {/* GAMBAR */}
-        <div
-          className={`relative shrink-0 rounded-lg overflow-hidden aspect-video
-          ${layout === "col"
-  ? "w-full"
-  : variant === "large"
-    ? "w-full sm:w-32"
-    : "w-full sm:w-20"}
-
-          `}
-        >
+        {/* 🖼️ GAMBAR */}
+        <div className="relative w-full aspect-video rounded-lg overflow-hidden">
           <Image
-            src={item.image}
+            src={item.gambar?.[0] || "/placeholder.png"}
             alt={item.judul}
             fill
-            className="object-contain"
+            className="object-cover group-hover:scale-105 transition"
           />
         </div>
 
+        {/* 📅 + 🏷️ */}
+        <div className="flex items-center justify-between text-xs text-muted-foreground">
 
-        {/* TEKS */}
-<div className={`text-sm ${layout === "col" ? "space-y-2" : "space-y-1"}`}>
+          {/* tanggal */}
+          <div className="flex items-center gap-1">
+            <CalendarDays className="w-3 h-3" />
+            <span>{item.tanggal}</span>
+          </div>
 
-  
-  <p className="text-xs text-muted-foreground">
-    {item.tanggal}
-  </p>
-  <p className="font-semibold line-clamp-4">
-    {item.judul}
-  </p>
-  
-  {variant === "large" && (
-    <p className="text-sm text-muted-foreground line-clamp-4">
-      {item.konten}
-    </p>
-  )}
+          {/* kategori */}
+          <span className="bg-primary/10 text-primary px-2 py-0.5 rounded-full">
+            {item.kategori?.nama || "Umum"}
+          </span>
+        </div>
 
-  <Link href={`/berita/${item.id}`}>
-    {variant === "large" && (
-      <span className="inline-block text-primary text-sm font-medium cursor-pointer hover:underline">
-        Lihat detail →
-      </span>
-    )}
-  </Link>
-</div>
+        {/* 📰 JUDUL */}
+        <p className="font-semibold text-sm line-clamp-3 leading-snug group-hover:text-primary transition">
+          {item.judul}
+        </p>
+
+        {/* 📄 KONTEN (optional untuk large) */}
+        {variant === "large" && (
+          <p className="text-sm text-muted-foreground line-clamp-3">
+            {item.konten}
+          </p>
+        )}
+
+        {/* 👉 CTA */}
+        {variant === "large" && (
+          <span className="text-primary text-sm font-medium hover:underline">
+            Lihat detail →
+          </span>
+        )}
 
       </div>
-</Link>
+    </Link>
   )
 }

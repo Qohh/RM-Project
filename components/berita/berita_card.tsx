@@ -70,7 +70,7 @@ export default function BeritaCard({
     </div>
   </div>
 
-  <CardTitle className="line-clamp-4 leading-relaxed">
+  <CardTitle className="line-clamp-3 leading-relaxed">
     {judul}
   </CardTitle>
 

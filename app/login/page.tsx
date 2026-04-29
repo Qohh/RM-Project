@@ -11,14 +11,14 @@ import Image from "next/image";
 
 export default function LoginPage() {
   return (
-    <main className="flex flex-col items-center justify-center min-h-screen bg-background p-4">
+    <main className="flex flex-col items-center justify-center min-h-screen bg-background mt-20">
       <div className="w-full max-w-md">
         <div className="flex justify-center p-4">
           <Image
             src="/logo-rm.png"
             alt="Logo Organisasi"
-            width={60}
-            height={60}
+            width={50}
+            height={50}
           />
         </div>
         <Card className="shadow-lg">

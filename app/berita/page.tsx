@@ -74,10 +74,10 @@ export default function BeritaPage() {
 
 
   return (
-    <div className="max-w-7xl mx-auto mt-24 p-5 space-y-5">
+    <div className="max-w-7xl mx-auto mt-24 p-5 space-y-5 ml-5">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
 
-      <div className="flex flex-col ml-5">
+      <div className="flex flex-col">
       <h1 className="text-2xl md:text-4xl font-bold text-primary text-left mb-1">
         SEMUA BERITA
       </h1>
@@ -92,7 +92,7 @@ export default function BeritaPage() {
           value={selectedKategori}
           onValueChange={(value) => setSelectedKategori(value)}
         >
-          <SelectTrigger className="w-[180px] md:w-[220px] border-primary">
+          <SelectTrigger className="h-10 w-[140px] md:w-[160px] border border-primary rounded-xl outline-none focus:ring-2 focus:ring-primary">
             <SelectValue placeholder="Pilih kategori" />
           </SelectTrigger>
 
@@ -113,8 +113,9 @@ export default function BeritaPage() {
     onChange={(e) => setSearch(e.target.value)}
     className="
       w-full
+      h-10
       border border-primary
-      rounded-xl md:rounded-2xl
+      rounded-xl
       pl-4 pr-12
       py-1 md:p-3
       outline-none
