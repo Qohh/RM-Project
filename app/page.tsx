@@ -7,8 +7,7 @@ import Informasi_slider from "@/components/informasi_slider"
 import KegiatanTerbaru from "@/components/kegiatan/kegiatan_terbaru"
 import BeritaTerbaru from "@/components/berita/berita_terbaru"
 import Footer from "@/components/footer"
-import { kegiatan } from "@/data/kegiatan"
-import { berita } from "@/data/berita"
+import { supabase } from "@/lib/supabase"
 import { Users, CalendarDays, BarChart3, CalendarCheck, ClipboardList } from "lucide-react"
 
 export default function BerandaPage() {
@@ -25,85 +24,187 @@ export default function BerandaPage() {
     return () => clearInterval(interval)
   }, [])
 
-  const latestKegiatan = kegiatan
-    .sort((a, b) => new Date(b.tanggal).getTime() - new Date(a.tanggal).getTime())
-    .slice(0, 2)
-  const latestBerita = berita
-      .sort((a, b) => new Date(b.tanggal).getTime() - new Date(a.tanggal).getTime())
-    .slice(0, 2)
+
+  const [prayerTimes, setPrayerTimes] = useState<any>(null)
+const [currentTime, setCurrentTime] = useState("--:--")
+const [nextPrayer, setNextPrayer] = useState<any>({ name: "-", time: "-" })
+const [nextMinutes, setNextMinutes] = useState(0)
+
+const [beritaData, setBeritaData] = useState<any[]>([])
+
+useEffect(() => {
+  async function fetchBerita() {
+    const { data, error } = await supabase
+      .from("berita")
+      .select("*")
+      .order("tanggal", { ascending: false })
+      .limit(4)
+
+    if (error) {
+      console.error(error)
+    } else {
+      setBeritaData(data)
+    }
+  }
+
+  fetchBerita()
+}, [])
+
+// helper
+function getTimeToday(timeStr: string) {
+  const [h, m] = timeStr.split(":").map(Number)
+  const now = new Date()
+  return new Date(now.getFullYear(), now.getMonth(), now.getDate(), h, m)
+}
+
+// fetch + logic
+useEffect(() => {
+  async function fetchPrayerTime() {
+    const res = await fetch(
+      "https://api.aladhan.com/v1/timingsByCity?city=Pontianak&country=Indonesia&method=20"
+    )
+    const json = await res.json()
+
+    const times = json.data.timings
+
+    setPrayerTimes(times)
+
+    const now = new Date()
+
+    const list = [
+      { name: "Subuh", time: times.Fajr },
+      { name: "Dzuhur", time: times.Dhuhr },
+      { name: "Ashar", time: times.Asr },
+      { name: "Maghrib", time: times.Maghrib },
+      { name: "Isya", time: times.Isha },
+    ]
+
+    const next =
+      list.find((p) => getTimeToday(p.time) > now) || list[0]
+
+    setNextPrayer(next)
+
+    const diff =
+      getTimeToday(next.time).getTime() - now.getTime()
+
+    setNextMinutes(Math.floor(diff / (1000 * 60)))
+  }
+
+  fetchPrayerTime()
+
+  const interval = setInterval(() => {
+    const now = new Date()
+    setCurrentTime(
+      now.toLocaleTimeString("id-ID", {
+        hour: "2-digit",
+        minute: "2-digit",
+      })
+    )
+  }, 1000)
+
+  return () => clearInterval(interval)
+}, [])  
 
   return (
     <div className="mt-28">
-      
-      <div className="flex flex-col md:flex-row pb-10">
-      <div className="flex flex-col w-full md:w-2/3 relative px-5 pt-5">
-        <img
-          src={images[currentIndex]}
-          alt="Foto Pengurus RM"
-          className="w-full h-full object-cover rounded-xl"
-        />
+      <div className="flex flex-col md:flex-row items-stretch gap-5 px-5 pt-5 pb-10">
 
-        <div
-          className="absolute inset-x-0 bottom-0 h-24
-                    bg-gradient-to-t
-                    from-[#f0f9ff]
-                    to-transparent"
-        />
+  {/* KIRI (HERO) */}
+  <div className="w-full md:w-2/3 relative">
+    <img
+      src={images[currentIndex]}
+      alt="Foto Pengurus RM"
+      className="w-full h-[350px] md:h-full object-cover rounded-2xl"
+    />
 
-        <div className="absolute inset-0 flex items-start md:items-end p-6 pt-10 md:pb-6">
-        <h2 className="text-white text-xl sm:text-2xl md:text-4xl font-bold mb-6 ml-4">
-          Ahlan Wa Sahlan!
-        </h2>
-        </div>
+    <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-[#f0f9ff] to-transparent" />
+
+    <div className="absolute inset-0 flex items-end p-6">
+      <h2 className="text-white text-2xl md:text-4xl font-bold">
+        Ahlan Wa Sahlan!
+      </h2>
+    </div>
+  </div>
+
+  {/* KANAN (PRAYER) */}
+  <div className="w-full md:w-1/3 flex">
+
+    <div className="bg-white rounded-2xl border shadow-sm p-4 w-full flex flex-col justify-between">
+
+      <div className="grid grid-cols-2 gap-3 mb-3">
+
+  {/* WAKTU SEKARANG */}
+  <div className="bg-gray-50 rounded-xl p-3 text-center">
+    <p className="text-xs text-gray-500">Sekarang</p>
+    <h1 className="text-2xl font-bold text-primary">
+      {currentTime}
+    </h1>
+  </div>
+
+  {/* NEXT PRAYER */}
+  <div className="bg-primary/10 rounded-xl p-3 text-center">
+    <p className="text-xs text-gray-600">Selanjutnya</p>
+    <p className="font-semibold text-primary">
+      {nextPrayer.name}
+    </p>
+    <p className="text-xs text-gray-500">
+      {nextMinutes} menit
+    </p>
+  </div>
+
+</div>
+
+      {/* LIST */}
+      <div className="space-y-1.5">
+        {[
+          { label: "Subuh", key: "Fajr" },
+          { label: "Dzuhur", key: "Dhuhr" },
+          { label: "Ashar", key: "Asr" },
+          { label: "Maghrib", key: "Maghrib" },
+          { label: "Isya", key: "Isha" },
+        ].map((item) => {
+          const active = nextPrayer.name === item.label
+
+          return (
+            <div
+              key={item.key}
+              className={`flex justify-between items-center px-3 py-2 rounded-lg text-sm transition
+              ${
+                active
+                  ? "bg-primary text-white font-semibold shadow"
+                  : "bg-gray-50"
+              }`}
+            >
+              <span>{item.label}</span>
+              <span>{prayerTimes?.[item.key] || "--:--"}</span>
+            </div>
+          )
+        })}
       </div>
 
-      <div className="flex flex-col w-full md:w-1/3">
+    </div>
+  </div>
+</div>
 
-      <h1 className="text-center text-2xl font-bold pt-5">Informasi Terbaru</h1>
-      <div className="mx-auto mt-2 mb-4 w-56 h-[2px] bg-primary rounded-full" />
-        <Informasi_slider/>
-      </div>
-      </div>
+<div className="bg-white rounded-xl p-5">
 
-<div className="flex flex-col md:flex-row gap-5 p-5">
+  <h1 className="text-center text-2xl font-bold">
+    Berita Terbaru
+  </h1>
 
-<div className="flex flex-col w-full md:w-1/2 bg-white rounded-xl">
+  <div className="mx-auto mt-2 mb-6 w-40 h-[2px] bg-primary rounded-full" />
 
-          <h1 className="text-center text-2xl font-bold pt-5">
-            Kegiatan Terbaru
-          </h1>
+  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-5">
+    {beritaData.map(item => (
+      <BeritaTerbaru
+        key={item.id}
+        item={item}
+        variant="large"
+      />
+    ))}
+  </div>
 
-          <div className="mx-auto mt-2 mb-4 w-40 h-[2px] bg-primary rounded-full" />
-          <div className="grid grid-cols-2 gap-4 px-4 pb-4 h-full">
-            {latestKegiatan.map(item => (
-              <KegiatanTerbaru
-                key={item.id}
-                item={item}
-                variant="large"
-                layout="col"
-              />
-            ))}
-          </div>
-        </div>
-
-<div className="flex flex-col w-full md:w-1/2 bg-white rounded-xl">
-
-          <h1 className="text-center text-2xl font-bold pt-5">
-            Berita Terbaru
-          </h1>
-          <div className="mx-auto mt-2 mb-4 w-40 h-[2px] bg-primary rounded-full" />
-          <div className="grid grid-cols-2 gap-4 px-4 pb-4 h-full">
-            {latestBerita.map(item => (
-              <BeritaTerbaru
-                key={item.id}
-                item={item}
-                variant="large"
-                layout="col"
-              />
-            ))}
-          </div>
-        </div>
-      </div>
+</div>
 
 {/* STATISTIK PENGUNJUNG */}
 <div className="px-5 pb-10">
