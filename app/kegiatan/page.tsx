@@ -19,29 +19,28 @@ export default function KegiatanPage() {
 
   const [filterStatus, setFilterStatus] = useState("all")
 
+const filteredKegiatan = dataKegiatan.filter((item) => {
+  const matchSearch = item.judul
+    .toLowerCase()
+    .includes(search.toLowerCase())
+
   const now = new Date()
-  now.setHours(0, 0, 0, 0)
 
-  const filteredKegiatan = dataKegiatan.filter((item) => {
-    const matchSearch = item.judul
-      .toLowerCase()
-      .includes(search.toLowerCase())
+  const start = new Date(`${item.tanggal_mulai}T${item.waktu_mulai}`)
+  const end = new Date(`${item.tanggal_selesai}T${item.waktu_selesai}`)
 
-    const tanggal = new Date(item.tanggal)
-    tanggal.setHours(0, 0, 0, 0)
+  let matchStatus = true
 
-    let matchStatus = true
+  if (filterStatus === "upcoming") {
+    matchStatus = now < start
+  } else if (filterStatus === "ongoing") {
+    matchStatus = now >= start && now <= end
+  } else if (filterStatus === "selesai") {
+    matchStatus = now > end
+  }
 
-    if (filterStatus === "upcoming") {
-      matchStatus = tanggal > now
-    } else if (filterStatus === "ongoing") {
-      matchStatus = tanggal.getTime() === now.getTime()
-    } else if (filterStatus === "selesai") {
-      matchStatus = tanggal < now
-    }
-
-    return matchSearch && matchStatus
-  })
+  return matchSearch && matchStatus
+})
   
   useEffect(() => {
   const fetchData = async () => {
@@ -49,7 +48,7 @@ export default function KegiatanPage() {
       .from("kegiatan")
       .select("*")
       .eq("status", "publish") 
-      .order("tanggal", { ascending: false })
+      .order("tanggal_mulai", { ascending: false })
 
     if (error) {
       console.error("Error:", error)
@@ -129,7 +128,10 @@ export default function KegiatanPage() {
               id={item.id}
               judul={item.judul}
               deskripsi={item.deskripsi}
-              tanggal={item.tanggal}
+                tanggalMulai={item.tanggal_mulai}
+                waktuMulai={item.waktu_mulai}
+                tanggalSelesai={item.tanggal_selesai}
+                waktuSelesai={item.waktu_selesai}
               image={item.gambar?.[0]}
             />
           ))

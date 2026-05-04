@@ -10,7 +10,10 @@ type KegiatanCardProps = {
   id: number
   judul: string
   deskripsi: string
-  tanggal: string
+  tanggalMulai: string
+  waktuMulai: string
+  tanggalSelesai: string
+  waktuSelesai: string
   image: string
 }
 
@@ -18,23 +21,35 @@ export default function KegiatanCard({
   id,
   judul,
   deskripsi,
-  tanggal,
+  tanggalMulai,
+  waktuMulai,
+  tanggalSelesai,
+  waktuSelesai,
   image,
 }: KegiatanCardProps) {
 
-  const getStatus = (tanggal: string) => {
-    const today = new Date()
-    today.setHours(0,0,0,0)
+const getStatus = (
+  tanggalMulai: string,
+  waktuMulai: string,
+  tanggalSelesai: string,
+  waktuSelesai: string
+) => {
+  const now = new Date()
 
-    const tgl = new Date(tanggal)
-    tgl.setHours(0,0,0,0)
+  const start = new Date(`${tanggalMulai}T${waktuMulai}`)
+  const end = new Date(`${tanggalSelesai}T${waktuSelesai}`)
 
-    if (tgl > today) return "upcoming"
-    if (tgl.getTime() === today.getTime()) return "ongoing"
-    return "selesai"
-  }
+  if (now < start) return "upcoming"
+  if (now >= start && now <= end) return "ongoing"
+  return "selesai"
+}
 
-  const status = getStatus(tanggal)
+const status = getStatus(
+  tanggalMulai,
+  waktuMulai,
+  tanggalSelesai,
+  waktuSelesai
+)
 
   return (
     <Card className="flex flex-col shadow transition-all duration-300 hover:-translate-y-2 hover:shadow-xl">
@@ -101,7 +116,7 @@ export default function KegiatanCard({
           {/* TANGGAL */}
           <div className="flex items-center gap-1 text-sm text-muted-foreground">
             <CalendarDays className="w-4 h-4" />
-            {tanggal}
+            {tanggalMulai}
           </div>
 
         </div>

@@ -3,7 +3,7 @@ type StatCardProps = {
   value: string | number
   icon: React.ReactNode
   change: string
-  color: "blue" | "green" | "purple"
+  color: "blue" | "green" | "purple" | "orange"
 }
 
 export default function StatCard({
@@ -18,6 +18,7 @@ export default function StatCard({
     blue: "bg-blue-100 text-blue-600",
     green: "bg-green-100 text-green-600",
     purple: "bg-purple-100 text-purple-600",
+    orange: "bg-orange-100 text-orange-600"
   }
 
   return (

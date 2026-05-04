@@ -21,30 +21,38 @@ export default function Dashboard() {
   const [pengurusCount, setPengurusCount] = useState(0)
 
   const [chartData, setChartData] = useState<any[]>([])
-  const [chartType, setChartType] = useState<"berita" | "kegiatan" | "pengunjung">("berita")
+  const [chartType, setChartType] = useState<"berita" | "kegiatan">("berita")
   const [timeFilter, setTimeFilter] = useState<"minggu" | "bulan" | "tahun">("bulan")
 
   const fetchChartData = async (type: string) => {
-  if (type === "pengunjung") {
-    setChartData([
-      { name: "Sen", total: 0 },
-      { name: "Sel", total: 0 },
-      { name: "Rab", total: 0 },
-      { name: "Kam", total: 0 },
-      { name: "Jum", total: 0 },
-      { name: "Sab", total: 0 },
-      { name: "Min", total: 0 },
-    ])
-    return
-  }
 
   const now = new Date()
 
-  const { data, error } = await supabase
-    .from(type)
-    .select("tanggal")
+let data: any[] = []
 
-  if (error) return console.error(error)
+  if (type === "berita") {
+    const res = await supabase
+      .from("berita")
+      .select("tanggal")
+      .eq("status", "publish")
+
+    if (res.error) return console.error(res.error)
+    data = res.data || []
+  }
+
+  if (type === "kegiatan") {
+    const res = await supabase
+      .from("kegiatan")
+      .select("tanggal_mulai")
+      .eq("status", "publish")
+
+    if (res.error) return console.error(res.error)
+
+    // 🔥 mapping biar formatnya sama
+    data = (res.data || []).map((item: any) => ({
+      tanggal: item.tanggal_mulai
+    }))
+  }
 
   let grouped: Record<string, number> = {}
 
@@ -54,8 +62,10 @@ export default function Dashboard() {
     // 🔥 FILTER BERDASARKAN WAKTU
     if (timeFilter === "minggu") {
       // hanya minggu ini
-      const start = new Date(now)
-      start.setDate(now.getDate() - now.getDay() + 1)
+const start = new Date(now)
+const day = now.getDay() || 7 // Minggu jadi 7
+start.setDate(now.getDate() - day + 1)
+start.setHours(0, 0, 0, 0)
 
       if (date < start) return
 
@@ -115,22 +125,26 @@ export default function Dashboard() {
 
   useEffect(() => {
     const fetchData = async () => {
-      const { count: berita } = await supabase
-        .from("berita")
-        .select("*", { count: "exact", head: true })
+const { count: berita } = await supabase
+  .from("berita")
+  .select("*", { count: "exact", head: true })
+  .eq("status", "publish")
 
-      const { count: kegiatan } = await supabase
-        .from("kegiatan")
-        .select("*", { count: "exact", head: true })
+const { count: kegiatan } = await supabase
+  .from("kegiatan")
+  .select("*", { count: "exact", head: true })
+  .eq("status", "publish")
 
-      const { count: pengurus } = await supabase
-        .from("pengurus")
-        .select("*", { count: "exact", head: true })
-
-      setBeritaCount(berita ?? 0)
-      setKegiatanCount(kegiatan ?? 0)
-      setPengurusCount(pengurus ?? 0)
-    }
+  const { count: pengurus } = await supabase
+    .from("pengurus")
+    .select("*", { count: "exact", head: true })
+ 
+  // ✅ SET SEMUA STATE
+  setBeritaCount(berita ?? 0)
+  setKegiatanCount(kegiatan ?? 0)
+  setPengurusCount(pengurus ?? 0)
+ 
+}
 
     fetchData()
   }, [])
@@ -209,7 +223,6 @@ const CustomTooltip = ({ active, payload, label }: any) => {
       >
         <option value="berita">Berita</option>
         <option value="kegiatan">Kegiatan</option>
-        <option value="pengunjung">Pengunjung</option>
       </select>
 
       <select

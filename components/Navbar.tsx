@@ -447,27 +447,27 @@ useEffect(() => {
       {[
         {
           label: "Instagram",
-          icon: "/icons/logo-instagram.png",
+          icon: "/icons/instagram.png",
           href: "https://www.instagram.com/remajamujahidin_kalbar/",
         },
         {
           label: "Facebook",
-          icon: "/icons/logo-facebook.png",
+          icon: "/icons/facebook.png",
           href: "https://www.facebook.com/remajamujahidinkalbar79",
         },
         {
           label: "Youtube",
-          icon: "/icons/logo-youtube.png",
+          icon: "/icons/youtube.png",
           href: "https://www.youtube.com/@remajamujahidinkalbar9696",
         },
         {
           label: "WhatsApp",
-          icon: "/icons/logo-whatsapp.png",
+          icon: "/icons/whatsapp.png",
           href: "https://wa.me/6285117212479",
         },
         {
           label: "TikTok",
-          icon: "/icons/logo-tiktok.png",
+          icon: "/icons/tiktok.png",
           href: "https://www.tiktok.com/@remajamujahidinkalbar",
         },
       ].map((item) => (
@@ -478,7 +478,7 @@ useEffect(() => {
           rel="noopener noreferrer"
           className="flex items-center gap-3 py-2 px-2 rounded-md text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition"
         >
-          <Image src={item.icon} alt={item.label} width={18} height={18} />
+          <img src={item.icon} alt={item.label} width={18} height={18} />
           {item.label}
         </a>
       ))}

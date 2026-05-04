@@ -64,7 +64,10 @@ const fetchData = async (mode: "admin" | "publik" = "admin") => {
     `)
     .order(orderBy, { ascending: false });
 
-  if (!error) setData(data);
+  if (!error) {
+    console.log("Data dari DB:", data); // Cek apakah statusnya "draft", "Draft", atau lainnya
+    setData(data);
+  }
 };
 
   useEffect(() => {
@@ -93,9 +96,18 @@ const fetchKategori = async () => {
   for (const img of images) {
     const fileName = `${Date.now()}-${img.name}`;
 
-    const { error } = await supabase.storage
-      .from("berita")
-      .upload(fileName, img);
+const { error } = await supabase.storage
+  .from("berita")
+  .upload(fileName, img);
+
+if (error) {
+  toast({
+    title: "Gagal upload gambar",
+    description: error.message,
+    variant: "destructive",
+  });
+  return;
+}
 
     const { data } = supabase.storage
       .from("berita")
@@ -154,19 +166,54 @@ const fetchKategori = async () => {
 };
 
 const hapusBerita = async (id: string) => {
-  const { error } = await supabase
-  .from("berita")
-  .delete()
-  .eq("id", id);
+  // 1. ambil data gambar dulu
+  const { data: berita } = await supabase
+    .from("berita")
+    .select("gambar")
+    .eq("id", id)
+    .single();
 
-if (error) {
+  if (berita?.gambar) {
+    let images: string[] = [];
+
+    try {
+      images = Array.isArray(berita.gambar)
+        ? berita.gambar
+        : JSON.parse(berita.gambar);
+    } catch {
+      images = [berita.gambar];
+    }
+
+    const filePaths = images.map((url: string) =>
+      url.split("/berita/")[1]?.split("?")[0]
+    );
+
+    // 🔥 hapus dari storage
+    await supabase.storage
+      .from("berita")
+      .remove(filePaths);
+  }
+
+  // 2. hapus dari DB
+  const { error } = await supabase
+    .from("berita")
+    .delete()
+    .eq("id", id);
+
+  if (error) {
+    toast({
+      title: "Gagal",
+      description: "Gagal menghapus berita.",
+      variant: "destructive",
+    });
+    return;
+  }
+
   toast({
-    title: "Gagal",
-    description: "Gagal menghapus berita.",
-    variant: "destructive",
+    title: "Berhasil!",
+    description: "Berita & gambar berhasil dihapus.",
   });
-  return;
-}
+
   fetchData();
 };
 
@@ -236,7 +283,33 @@ const handleSubmit = async (status: "publish" | "draft") => {
       }
     
        let finalImages = oldImages;
-    
+    // 🔥 kalau replace semua gambar (old kosong + ada gambar baru)
+if (imageUrls.length > 0 && oldImages.length === 0) {
+  const { data: berita } = await supabase
+    .from("berita")
+    .select("gambar")
+    .eq("id", editId)
+    .single();
+
+  if (berita?.gambar) {
+    let old: string[] = [];
+
+    try {
+      old = Array.isArray(berita.gambar)
+        ? berita.gambar
+        : JSON.parse(berita.gambar);
+    } catch {
+      old = [berita.gambar];
+    }
+
+    const paths = old.map((url: string) =>
+      url.split("/berita/")[1]?.split("?")[0]
+    );
+
+    await supabase.storage.from("berita").remove(paths);
+  }
+}
+
     // kalau ada gambar baru
     if (imageUrls.length > 0) {
       // kalau oldImages kosong → berarti replace semua
@@ -307,8 +380,10 @@ setOldImages([]);
 };
 
 const filteredData = data.filter((item) => {
-  const matchStatus =
-    filter === "all" ? true : item.status === filter;
+const matchStatus =
+  filter === "all"
+    ? true
+    : item.status?.toLowerCase().trim() === filter;
 
   const matchSearch = item.judul
     .toLowerCase()
@@ -344,22 +419,41 @@ const filteredData = data.filter((item) => {
 
   {/* JUDUL (2 kolom) */}
   <div className="md:col-span-2 space-y-1">
-    <label className="text-base font-medium">Judul</label>
-    <input
-      placeholder="Masukkan judul berita"
-      type="text"
-      value={judul}
-      onChange={(e) => setJudul(e.target.value)}
-      className={`w-full h-10 px-3 border rounded-lg outline-none
-      ${errors.judul 
-        ? "focus:ring-2 border-red-500 focus:ring-red-500" 
-        : "focus:ring-2 focus:ring-primary"}
-    `}
-    />
-    {errors.judul && (
+  <label className="text-base font-medium">Judul</label>
+
+  <input
+    placeholder="Masukkan judul berita"
+    type="text"
+    value={judul}
+    onChange={(e) => {
+      if (e.target.value.length <= 200) {
+        setJudul(e.target.value)
+      }
+    }}
+    className={`w-full h-10 px-3 border rounded-lg outline-none
+    ${
+      errors.judul
+        ? "focus:ring-2 border-red-500 focus:ring-red-500"
+        : "focus:ring-2 focus:ring-primary"
+    }`}
+  />
+
+  {/* ERROR */}
+  {errors.judul && (
     <p className="text-xs text-red-500">*Judul harus diisi</p>
   )}
+
+  {/* COUNTER */}
+  <div className="flex justify-end text-xs">
+    <span
+      className={`${
+        judul.length === 200 ? "text-red-500" : "text-gray-500"
+      }`}
+    >
+      {judul.length}/200
+    </span>
   </div>
+</div>
 
   {/* TANGGAL (1 kolom) */}
   <div className="space-y-1">
@@ -465,6 +559,63 @@ const filteredData = data.filter((item) => {
 
         <div className="flex gap-3">
           <button
+// ✅ BENAR
+onClick={() => {
+  const removedImage = oldImages[index];
+
+  // hapus dari state
+  const newOld = oldImages.filter((_, i) => i !== index);
+  setOldImages(newOld);
+
+  // 🔥 hapus dari storage juga
+  const path = removedImage
+    .split("/berita/")[1]
+    ?.split("?")[0];
+
+  if (path) {
+    supabase.storage.from("berita").remove([path]);
+  }
+}}
+          
+            className="text-red-500 text-sm"
+          >
+            Hapus
+          </button>
+
+          <label className="text-blue-500 text-sm cursor-pointer">
+            Ubah
+            <input
+              type="file"
+              className="hidden"
+onChange={(e) => {
+  const file = e.target.files?.[0]
+  if (!file) return
+
+  // hapus dari oldImages
+  const newOld = oldImages.filter((_, i) => i !== index)
+  setOldImages(newOld)
+
+  // masuk ke images (baru)
+  setImages((prev) => [...prev, file])
+}}
+            />
+          </label>
+        </div>
+      </div>
+    ))}
+  </div>
+)}
+{images.length > 0 && (
+  <div className="mt-3 space-y-2">
+    {images.map((img, index) => (
+      <div
+        key={index}
+        className="flex justify-between items-center border p-3 rounded-lg"
+      >
+        <span className="text-sm truncate">{img.name}</span>
+
+        <div className="flex gap-3">
+          <button
             onClick={() => {
               const newImages = images.filter((_, i) => i !== index)
               setImages(newImages)
@@ -498,11 +649,15 @@ const filteredData = data.filter((item) => {
 </div>
 
       {/* TEXTAREA FULL */}
-      <div className="space-y-1">
+<div className="space-y-1">
   <textarea
     placeholder="Masukkan isi berita"
     value={isi}
-    onChange={(e) => setIsi(e.target.value)}
+    onChange={(e) => {
+      if (e.target.value.length <= 1000) {
+        setIsi(e.target.value)
+      }
+    }}
     className={`w-full px-3 p-2 border rounded-lg outline-none
       ${
         errors.isi
@@ -512,9 +667,21 @@ const filteredData = data.filter((item) => {
     `}
   />
 
+  {/* ERROR */}
   {errors.isi && (
     <p className="text-xs text-red-500">*Isi harus diisi</p>
   )}
+
+  {/* COUNTER */}
+  <div className="flex justify-end text-xs">
+    <span
+      className={`${
+        isi.length >= 1000 ? "text-red-500" : "text-gray-500"
+      }`}
+    >
+      {isi.length}/1000
+    </span>
+  </div>
 </div>
 
       {/* BUTTON */}
@@ -677,7 +844,13 @@ const filteredData = data.filter((item) => {
       Tidak ada berita.
     </div>
   ) : (
-    filteredData.map((item) => (
+    filteredData.map((item) => {
+       console.log({
+    status: item.status,
+    kategori: item.kategori_id,
+  });
+
+  return (
       <div
   key={item.id}
   className="grid grid-cols-6 gap-4 px-4 py-4 items-center border-b hover:bg-gray-50 transition text-center"
@@ -705,7 +878,7 @@ const filteredData = data.filter((item) => {
             : "bg-orange-100 text-orange-600"
         }`}
     >
-      {item.status === "publish" ? "Publish" : "Draft"}
+      {item.status === "publish" ? "Publish" : "draft"}
     </span>
   </div>
 
@@ -777,8 +950,8 @@ const filteredData = data.filter((item) => {
 
 </div>
 
-</div>
-    ))
+</div> )
+    })
   )}
 </div>
 </div>

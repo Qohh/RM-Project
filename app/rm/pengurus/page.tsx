@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
+import Image from "next/image"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -22,6 +23,7 @@ import {
 } from "@/components/ui/select";
 import { Pencil, Trash2, Search, CheckCircle } from "lucide-react"
 import { useToast } from "@/hooks/use-toast";
+import imageCompression from "browser-image-compression";
 
 // ===== TYPES =====
 type Jabatan = {
@@ -104,15 +106,13 @@ export default function UploadPengurus() {
     setErrors({ ...errors, [e.target.name]: "" });
   };
 
-  // ===== HANDLE FILE =====
-  const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const selected = e.target.files?.[0] || null;
-    setFile(selected);
-
-    if (selected) {
-      setPreview(URL.createObjectURL(selected));
+  useEffect(() => {
+  return () => {
+    if (preview) {
+      URL.revokeObjectURL(preview)
     }
-  };
+  }
+}, [preview])
 
   // ===== VALIDASI =====
   const validate = () => {
@@ -354,6 +354,25 @@ const selectedJabatan = jabatan.find(
   (j) => j.id === Number(form.jabatan_id)
 );
 
+const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const selected = e.target.files?.[0] || null;
+
+  if (!selected) return;
+
+  try {
+    const compressedFile = await imageCompression(selected, {
+      maxSizeMB: 0.3, // 🔥 max 300KB
+      maxWidthOrHeight: 800, // 🔥 resize
+      useWebWorker: true,
+    });
+
+    setFile(compressedFile);
+    setPreview(URL.createObjectURL(compressedFile));
+  } catch (err) {
+    console.error("Compress error:", err);
+  }
+};
+
   return (
     <div className="space-y-4">
         <div className="space-y-1">
@@ -545,14 +564,19 @@ const selectedJabatan = jabatan.find(
         className="w-full border p-2 rounded-lg"
       />
 
-      {preview && (
-        <div className="py-3">
-          <img
-            src={preview}
-            className="w-24 h-24 object-cover rounded-xl border"
-          />
-        </div>
-      )}
+     {preview && (
+      <div className="py-3">
+        <Image
+          src={preview}
+          alt="preview"
+          width={96}
+          height={96}
+          className="w-24 h-24 object-cover rounded-xl border"
+          unoptimized
+        />
+      </div>
+    )}
+
     </div>
     {/* RIWAYAT */}
 <div className="md:col-span-2 space-y-2">
@@ -689,11 +713,15 @@ const selectedJabatan = jabatan.find(
         key={item.id}
         className="relative flex gap-4 p-4 border rounded-xl h-[160px] hover:shadow-sm transition"
       >
-        {/* IMAGE */}
+        
         <div className="flex items-center">
-        <img
-            src={item.gambar || "/no-image.png"}
-            className="w-28 h-28 rounded-xl object-cover"
+        <Image
+          src={item.gambar || "/no-image.png"}
+          alt="gambar"
+          width={112}
+          height={112}
+          className="w-28 h-28 rounded-xl object-cover"
+          unoptimized
         />
         </div>
 

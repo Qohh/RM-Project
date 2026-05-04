@@ -35,10 +35,13 @@ export default function KegiatanPage() {
   const [data, setData] = useState<any[]>([]);
   const [judul, setJudul] = useState("");
   const [deskripsi, setDeskripsi] = useState("");
-  const [tanggal, setTanggal] = useState("");
   const [lokasi, setLokasi] = useState("");
   const [images, setImages] = useState<File[]>([]);
   const [oldImages, setOldImages] = useState<string[]>([]);
+  const [tanggalMulai, setTanggalMulai] = useState("")
+  const [waktuMulai, setWaktuMulai] = useState("")
+  const [tanggalSelesai, setTanggalSelesai] = useState("")
+  const [waktuSelesai, setWaktuSelesai] = useState("")
 
   const [filter, setFilter] = useState<"all" | "publish" | "draft">("all");
   const [search, setSearch] = useState("");
@@ -46,21 +49,25 @@ export default function KegiatanPage() {
   const [errors, setErrors] = useState({
     judul: false,
     deskripsi: false,
-    tanggal: false,
     lokasi: false,
     gambar: false,
   });
 
   // 🔄 ambil data
 const fetchData = async (mode: "admin" | "publik" = "admin") => {
-  const orderBy = mode === "admin" ? "created_at" : "tanggal";
+  const orderBy = mode === "admin" ? "created_at" : "tanggal_mulai";
 
   const { data, error } = await supabase
       .from("kegiatan")
       .select("*")
       .order(orderBy, { ascending: false });
 
-    if (!error) setData(data);
+    if (error) {
+      console.error("Fetch error:", error.message);
+      return;
+    }
+
+    setData(data);
   };
 
   useEffect(() => {
@@ -78,6 +85,15 @@ const fetchData = async (mode: "admin" | "publik" = "admin") => {
       .from("kegiatan")
       .upload(fileName, img);
 
+    if (error) {
+      toast({
+        title: "Gagal upload gambar",
+        description: error.message,
+        variant: "destructive",
+      });
+      return;
+    }
+
     const { data } = supabase.storage
       .from("kegiatan")
       .getPublicUrl(fileName);
@@ -91,7 +107,10 @@ const fetchData = async (mode: "admin" | "publik" = "admin") => {
       {
         judul,
         deskripsi,
-        tanggal,
+        tanggal_mulai: tanggalMulai,
+        waktu_mulai: waktuMulai,
+        tanggal_selesai: tanggalSelesai,
+        waktu_selesai: waktuSelesai,
         lokasi,
         gambar: imageUrls, 
         status,
@@ -126,28 +145,51 @@ const fetchData = async (mode: "admin" | "publik" = "admin") => {
 }
 
   setJudul("");
+  setTanggalMulai("");
+  setWaktuMulai("");
+  setTanggalSelesai("");
+  setWaktuSelesai("");
   setDeskripsi("");
-  setTanggal("");
   setLokasi("");
   setImages([]);
   setOldImages([]);
   fetchData();
 };
 
-const hapusKegiatan = async (id: string) => {
-  const { error } = await supabase
-  .from("kegiatan")
-  .delete()
-  .eq("id", id);
+const hapusKegiatan = async (id: number) => {
+  // 1. ambil gambar dulu
+  const { data } = await supabase
+    .from("kegiatan")
+    .select("gambar")
+    .eq("id", id)
+    .single();
 
-  if (error) {
+  if (data?.gambar) {
+    let images: string[] = [];
+
+    try {
+      images = Array.isArray(data.gambar)
+        ? data.gambar
+        : JSON.parse(data.gambar);
+    } catch {
+      images = [data.gambar];
+    }
+
+    const paths = images.map((url: string) =>
+      url.split("/kegiatan/")[1]?.split("?")[0]
+    );
+
+    await supabase.storage.from("kegiatan").remove(paths);
+  }
+
+  // 2. baru hapus DB
+  await supabase.from("kegiatan").delete().eq("id", id);
+
   toast({
-    title: "Gagal",
-    description: "Gagal menghapus kegiatan.",
-    variant: "destructive",
+    title: "Berhasil",
+    description: "Data berhasil dihapus.",
   });
-  return;
-}
+
   fetchData();
 };
 
@@ -160,8 +202,11 @@ const handleEdit = (item: any) => {
   setOldImages([]);
   setJudul(item.judul);
   setDeskripsi(item.deskripsi);
-  setTanggal(item.tanggal);
   setLokasi(item.lokasi);
+  setTanggalMulai(item.tanggal_mulai || "");
+  setWaktuMulai(item.waktu_mulai || "");
+  setTanggalSelesai(item.tanggal_selesai || "");
+  setWaktuSelesai(item.waktu_selesai || "");
   let parsedImages: string[] = [];
 
   try {
@@ -180,7 +225,10 @@ const handleSubmit = async (status: "publish" | "draft") => {
     judul: !judul,
     deskripsi: !deskripsi,
     lokasi: !lokasi,
-    tanggal: !tanggal,
+    tanggalMulai: !tanggalMulai,
+    waktuMulai: !waktuMulai,
+    tanggalSelesai: !tanggalSelesai,
+    waktuSelesai: !waktuSelesai,
     gambar: images.length === 0 && oldImages.length === 0,
   };
 
@@ -195,6 +243,18 @@ const handleSubmit = async (status: "publish" | "draft") => {
     return;
   }
 
+  const start = new Date(`${tanggalMulai}T${waktuMulai}`);
+  const end = new Date(`${tanggalSelesai}T${waktuSelesai}`);
+
+  if (end < start) {
+    toast({
+      title: "Waktu tidak valid",
+      description: "Waktu selesai tidak boleh sebelum mulai",
+      variant: "destructive",
+    });
+    return;
+  }
+
   if (editId) {
     const finalStatus =
       editStatus === "publish" ? "publish" : status; 
@@ -203,9 +263,18 @@ const handleSubmit = async (status: "publish" | "draft") => {
     for (const img of images) {
     const fileName = `${Date.now()}-${img.name}`;
 
-    await supabase.storage
+const { error } = await supabase.storage
       .from("kegiatan")
       .upload(fileName, img);
+
+    if (error) {
+      toast({
+        title: "Gagal upload",
+        description: error.message,
+        variant: "destructive",
+      });
+      return;
+    }
 
     const { data } = supabase.storage
       .from("kegiatan")
@@ -215,6 +284,32 @@ const handleSubmit = async (status: "publish" | "draft") => {
   }
 
    let finalImages = oldImages;
+
+   if (imageUrls.length > 0 && oldImages.length === 0) {
+  const { data } = await supabase
+    .from("kegiatan")
+    .select("gambar")
+    .eq("id", editId)
+    .single();
+
+  if (data?.gambar) {
+    let old: string[] = [];
+
+    try {
+      old = Array.isArray(data.gambar)
+        ? data.gambar
+        : JSON.parse(data.gambar);
+    } catch {
+      old = [data.gambar];
+    }
+
+    const paths = old.map((url: string) =>
+      url.split("/kegiatan/")[1]?.split("?")[0]
+    );
+
+    await supabase.storage.from("kegiatan").remove(paths);
+  }
+}
 
 // kalau ada gambar baru
 if (imageUrls.length > 0) {
@@ -233,7 +328,10 @@ if (imageUrls.length > 0) {
   .update({
     judul,
     deskripsi,
-    tanggal,
+    tanggal_mulai: tanggalMulai,
+    waktu_mulai: waktuMulai,
+    tanggal_selesai: tanggalSelesai,
+    waktu_selesai: waktuSelesai,
     lokasi,
     gambar: finalImages,
     status: finalStatus,
@@ -278,23 +376,29 @@ setOldImages([]);
 
   setJudul("");
   setDeskripsi("");
-  setTanggal("");
+  setTanggalMulai("");
+  setWaktuMulai("");
+  setTanggalSelesai("");
+  setWaktuSelesai("");
   setLokasi("");
   setImages([]);
   setOldImages([]);
   fetchData();
 };
 
-const getProgress = (tanggal: string) => {
-  const today = new Date();
-  const eventDate = new Date(tanggal);
+const getProgress = (
+  tanggalMulai: string,
+  waktuMulai: string,
+  tanggalSelesai: string,
+  waktuSelesai: string
+) => {
+  const now = new Date();
 
-  // reset jam biar akurat (opsional tapi bagus)
-  today.setHours(0, 0, 0, 0);
-  eventDate.setHours(0, 0, 0, 0);
+  const start = new Date(`${tanggalMulai}T${waktuMulai}`);
+  const end = new Date(`${tanggalSelesai}T${waktuSelesai}`);
 
-  if (eventDate > today) return "Upcoming";
-  if (eventDate.getTime() === today.getTime()) return "Ongoing";
+  if (now < start) return "Upcoming";
+  if (now >= start && now <= end) return "Ongoing";
   return "Selesai";
 };
 
@@ -327,63 +431,108 @@ const filteredData = data.filter((item) => {
       </h2>
 
       {/* GRID FORM */}
-      <div className="grid md:grid-cols-4 gap-4">
+<div className="grid md:grid-cols-4 gap-4">
 
-  {/* JUDUL (2 kolom) */}
-  <div className="md:col-span-3 space-y-1">
-    <label className="text-base font-medium">Judul</label>
-    <input
-      placeholder="Masukkan judul kegiatan"
-      type="text"
-      value={judul}
-      onChange={(e) => setJudul(e.target.value)}
-      className={`w-full h-10 px-3 border rounded-lg outline-none
-      ${errors.judul 
-        ? "focus:ring-2 border-red-500 focus:ring-red-500" 
-        : "focus:ring-2 focus:ring-primary"}
-    `}
-    />
-    {errors.judul && (
+ <div className="md:col-span-3 space-y-1">
+  <label className="text-base font-medium">Judul</label>
+
+  <input
+    placeholder="Masukkan judul kegiatan"
+    type="text"
+    value={judul}
+    onChange={(e) => {
+      if (e.target.value.length <= 150) {
+        setJudul(e.target.value)
+      }
+    }}
+    className={`w-full h-10 px-3 border rounded-lg outline-none
+    ${
+      errors.judul
+        ? "focus:ring-2 border-red-500 focus:ring-red-500"
+        : "focus:ring-2 focus:ring-primary"
+    }`}
+  />
+
+  {/* ERROR */}
+  {errors.judul && (
     <p className="text-xs text-red-500">*Judul harus diisi</p>
   )}
-  </div>
 
-  {/* TANGGAL (1 kolom) */}
-  <div className="space-y-1">
-    <label className="text-base font-medium">Tanggal</label>
-    <input
-      type="date"
-      value={tanggal}
-      onChange={(e) => setTanggal(e.target.value)}
-      className={`w-full h-10 px-3 border rounded-lg outline-none
-      ${errors.tanggal
-        ? "focus:ring-2 border-red-500 focus:ring-red-500" 
-        : "focus:ring-2 focus:ring-primary"}
-    `}
-    />
-    {errors.tanggal && (
-    <p className="text-xs text-red-500">*Tanggal harus diisi</p>
-  )}
+  {/* COUNTER */}
+  <div className="flex justify-end text-xs mt-1">
+    <span
+      className={`${
+        judul.length === 150 ? "text-red-500" : "text-gray-500"
+      }`}
+    >
+      {judul.length}/150
+    </span>
   </div>
 </div>
 
-<div className="space-y-1">
+  {/* LOKASI (1 kolom) */}
+  <div className="space-y-1">
     <label className="text-base font-medium">Lokasi</label>
     <input
-      placeholder="Masukkan lokasi kegiatan"
+      placeholder="Masukkan lokasi"
       type="text"
       value={lokasi || ""}
       onChange={(e) => setLokasi(e.target.value)}
       className={`w-full h-10 px-3 border rounded-lg outline-none
       ${errors.lokasi
         ? "focus:ring-2 border-red-500 focus:ring-red-500" 
-        : "focus:ring-2 focus:ring-primary"}
-    `}
+        : "focus:ring-2 focus:ring-primary"}`}
     />
     {errors.lokasi && (
-    <p className="text-xs text-red-500">*Lokasi harus diisi</p>
-  )}
+      <p className="text-xs text-red-500">*Lokasi harus diisi</p>
+    )}
   </div>
+
+  {/* TANGGAL MULAI */}
+  <div className="space-y-1">
+    <label className="text-base font-medium">Tanggal Mulai</label>
+    <input
+      type="date"
+      value={tanggalMulai}
+      onChange={(e) => setTanggalMulai(e.target.value)}
+      className="w-full h-10 px-3 border rounded-lg outline-none focus:ring-2 focus:ring-primary"
+    />
+  </div>
+
+  {/* WAKTU MULAI */}
+  <div className="space-y-1">
+    <label className="text-base font-medium">Waktu Mulai</label>
+    <input
+      type="time"
+      value={waktuMulai}
+      onChange={(e) => setWaktuMulai(e.target.value)}
+      className="w-full h-10 px-3 border rounded-lg outline-none focus:ring-2 focus:ring-primary"
+    />
+  </div>
+
+  {/* TANGGAL SELESAI */}
+  <div className="space-y-1">
+    <label className="text-base font-medium">Tanggal Selesai</label>
+    <input
+      type="date"
+      value={tanggalSelesai}
+      onChange={(e) => setTanggalSelesai(e.target.value)}
+      className="w-full h-10 px-3 border rounded-lg outline-none focus:ring-2 focus:ring-primary"
+    />
+  </div>
+
+  {/* WAKTU SELESAI */}
+  <div className="space-y-1">
+    <label className="text-base font-medium">Waktu Selesai</label>
+    <input
+      type="time"
+      value={waktuSelesai}
+      onChange={(e) => setWaktuSelesai(e.target.value)}
+      className="w-full h-10 px-3 border rounded-lg outline-none focus:ring-2 focus:ring-primary"
+    />
+  </div>
+
+</div>
 
   {/* GAMBAR (FULL 4 KOLOM) */}
   <div className="md:col-span-4 space-y-1">
@@ -439,9 +588,17 @@ const filteredData = data.filter((item) => {
           {/* HAPUS */}
           <button
             onClick={() => {
-              const newOld = oldImages.filter((_, i) => i !== index);
-              setOldImages(newOld);
-            }}
+  const removed = oldImages[index];
+
+  const newOld = oldImages.filter((_, i) => i !== index);
+  setOldImages(newOld);
+
+  const path = removed.split("/kegiatan/")[1]?.split("?")[0];
+
+  if (path) {
+    supabase.storage.from("kegiatan").remove([path]);
+  }
+}}
             className="text-red-500 text-sm"
           >
             Hapus
@@ -511,14 +668,19 @@ const filteredData = data.filter((item) => {
     ))}
   </div>
 )}
+
   </div>
 
-      {/* TEXTAREA FULL */}
-      <div className="space-y-1">
+  <div className="space-y-1">
+    <label className="text-base font-medium">Deksripsi Kegiatan</label>
   <textarea
     placeholder="Masukkan deskripsi kegiatan"
     value={deskripsi}
-    onChange={(e) => setDeskripsi(e.target.value)}
+    onChange={(e) => {
+      if (e.target.value.length <= 7000) {
+        setDeskripsi(e.target.value)
+      }
+    }}
     className={`w-full px-3 p-2 border rounded-lg outline-none
       ${
         errors.deskripsi
@@ -531,12 +693,21 @@ const filteredData = data.filter((item) => {
   {errors.deskripsi && (
     <p className="text-xs text-red-500">*Isi harus diisi</p>
   )}
+
+  <div className="flex justify-end text-xs mt-1">
+    <span
+      className={`${
+        deskripsi.length >= 7000 ? "text-red-500" : "text-gray-500"
+      }`}
+    >
+      {deskripsi.length}/1000
+    </span>
+  </div>
 </div>
 
-      {/* BUTTON */}
 <div className="flex gap-2">
 
-  {/* PUBLISH */}
+  {/* PUBLISH / UPDATE */}
   <AlertDialog>
     <AlertDialogTrigger asChild>
       <button className="bg-green-500 text-white px-4 py-2 rounded-lg hover:opacity-90">
@@ -547,8 +718,11 @@ const filteredData = data.filter((item) => {
     <AlertDialogContent>
       <AlertDialogHeader>
         <AlertDialogTitle>
-          {editStatus === "publish" ? "Update kegiatan?" : "Publish kegiatan?"}
+          {editStatus === "publish"
+            ? "Update kegiatan?"
+            : "Publish kegiatan?"}
         </AlertDialogTitle>
+
         <AlertDialogDescription>
           {editStatus === "publish"
             ? "Perubahan akan langsung terlihat oleh pengguna."
@@ -568,7 +742,7 @@ const filteredData = data.filter((item) => {
     </AlertDialogContent>
   </AlertDialog>
 
-  {/* DRAFT */}
+  {/* DRAFT (hanya kalau bukan publish) */}
   {editStatus !== "publish" && (
     <AlertDialog>
       <AlertDialogTrigger asChild>
@@ -581,7 +755,7 @@ const filteredData = data.filter((item) => {
         <AlertDialogHeader>
           <AlertDialogTitle>Simpan sebagai draft?</AlertDialogTitle>
           <AlertDialogDescription>
-            Kegiatan tidak akan dipublikasikan dan hanya tersimpan sebagai draft.
+            Kegiatan tidak akan dipublikasikan.
           </AlertDialogDescription>
         </AlertDialogHeader>
 
@@ -673,7 +847,7 @@ const filteredData = data.filter((item) => {
   className="grid grid-cols-6 gap-4 px-4 py-4 items-center border-b hover:bg-gray-50 transition text-center"
 >
   {/* Tanggal */}
-  <div className="text-sm text-gray-600">{item.tanggal}</div>
+  <div className="text-sm text-gray-600">{item.tanggal_mulai}</div>
 
   {/* Judul (2 kolom, kiri) */}
   <div className="col-span-2 font-medium text-left">
@@ -681,27 +855,32 @@ const filteredData = data.filter((item) => {
   </div>
 
   {/* Progress */}
-  <div className="text-sm text-gray-500">
-    {(() => {
-            const progress = getProgress(item.tanggal);
+ <div className="text-sm text-gray-500">
+  {(() => {
+    const progress = getProgress(
+      item.tanggal_mulai,
+      item.waktu_mulai,
+      item.tanggal_selesai,
+      item.waktu_selesai
+    )
 
-            return (
-              <span
-                className={`px-3 py-1 text-xs rounded-full font-medium
-                  ${
-                    progress === "Upcoming"
-                      ? "bg-yellow-100 text-yellow-700"
-                      : progress === "Ongoing"
-                      ? "bg-blue-100 text-blue-700"
-                      : "bg-green-100 text-green-700"
-                  }
-                `}
-              >
-                {progress}
-              </span>
-            );
-          })()}
-  </div>
+    return (
+        <span
+          className={`px-3 py-1 text-xs rounded-full font-medium
+            ${
+              progress === "Upcoming"
+                ? "bg-yellow-100 text-yellow-700"
+                : progress === "Ongoing"
+                ? "bg-blue-100 text-blue-700"
+                : "bg-green-100 text-green-700"
+            }
+          `}
+        >
+          {progress}
+        </span>
+    )
+  })()}
+</div>
 
   {/* Status */}
   <div>

@@ -1,5 +1,6 @@
 "use client"
 
+import Image from "next/image"
 import { useEffect, useState } from "react"
 import KegiatanCard from "@/components/kegiatan/kegiatan_card"
 import KegiatanSlider from "@/components/informasi_slider"
@@ -12,23 +13,34 @@ import { Users, CalendarDays, BarChart3, CalendarCheck, ClipboardList } from "lu
 
 export default function BerandaPage() {
     const images = [
+    "/Foto-Pengurus-Full.png",
     "/Foto-Pengurus-Akhwat.png",
     "/Foto-Pengurus-Ikhwan.png",
-    "/Foto-Pawai.png",
   ]
   const [currentIndex, setCurrentIndex] = useState(0)
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentIndex((prev) => (prev + 1) % images.length)
-    }, 3000)
+    }, 5000)
     return () => clearInterval(interval)
   }, [])
 
+useEffect(() => {
+  images.forEach((src) => {
+    const img = new window.Image()
+    img.src = src
+  })
+}, [])
 
-  const [prayerTimes, setPrayerTimes] = useState<any>(null)
+
+const [prayerTimes, setPrayerTimes] = useState<any>(null)
 const [currentTime, setCurrentTime] = useState("--:--")
 const [nextPrayer, setNextPrayer] = useState<any>({ name: "-", time: "-" })
 const [nextMinutes, setNextMinutes] = useState(0)
+const getToday = () => {
+  const d = new Date()
+  return d.toLocaleDateString("en-CA") // format: YYYY-MM-DD
+}
 
 const [beritaData, setBeritaData] = useState<any[]>([])
 
@@ -105,16 +117,36 @@ useEffect(() => {
   return () => clearInterval(interval)
 }, [])  
 
+const formatMinutes = (minutes: number) => {
+  const jam = Math.floor(minutes / 60)
+  const sisaMenit = minutes % 60
+
+  if (jam > 0 && sisaMenit > 0) {
+    return `${jam} jam ${sisaMenit} menit`
+  }
+  if (jam > 0) {
+    return `${jam} jam`
+  }
+  return `${sisaMenit} menit`
+}
+
+const formatDate = (d: Date) => {
+  return d.toLocaleDateString("en-CA")
+}
+
   return (
     <div className="mt-28">
-      <div className="flex flex-col md:flex-row items-stretch gap-5 px-5 pt-5 pb-10">
+     <div className="flex flex-col md:flex-row items-stretch gap-5 px-5 pt-5 pb-10">
 
   {/* KIRI (HERO) */}
-  <div className="w-full md:w-2/3 relative">
-    <img
+  <div className="w-full md:w-2/3 relative h-[400px]">
+    <Image
       src={images[currentIndex]}
-      alt="Foto Pengurus RM"
-      className="w-full h-[350px] md:h-full object-cover rounded-2xl"
+      alt="Foto"
+      fill
+      priority={currentIndex === 0}
+      unoptimized
+      className="object-cover rounded-2xl"
     />
 
     <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-[#f0f9ff] to-transparent" />
@@ -127,35 +159,38 @@ useEffect(() => {
   </div>
 
   {/* KANAN (PRAYER) */}
-  <div className="w-full md:w-1/3 flex">
+  <div className="w-full md:w-1/3 flex flex-col h-[400px]">
 
-    <div className="bg-white rounded-2xl border shadow-sm p-4 w-full flex flex-col justify-between">
+    {/* 🔥 JUDUL DI LUAR CARD */}
+    <h3 className="text-3xl text-center font-bold text-primary mb-3">
+      🕌 Waktu Adzan
+    </h3>
 
+    {/* CARD */}
+    <div className="bg-white rounded-2xl border shadow-sm p-4 flex-1 flex flex-col">
+
+      {/* TOP INFO */}
       <div className="grid grid-cols-2 gap-3 mb-3">
+        <div className="bg-gray-50 rounded-xl p-3 text-center">
+          <p className="text-xs text-gray-500">Sekarang</p>
+          <h1 className="text-2xl font-bold text-primary">
+            {currentTime}
+          </h1>
+        </div>
 
-  {/* WAKTU SEKARANG */}
-  <div className="bg-gray-50 rounded-xl p-3 text-center">
-    <p className="text-xs text-gray-500">Sekarang</p>
-    <h1 className="text-2xl font-bold text-primary">
-      {currentTime}
-    </h1>
-  </div>
-
-  {/* NEXT PRAYER */}
-  <div className="bg-primary/10 rounded-xl p-3 text-center">
-    <p className="text-xs text-gray-600">Selanjutnya</p>
-    <p className="font-semibold text-primary">
-      {nextPrayer.name}
-    </p>
-    <p className="text-xs text-gray-500">
-      {nextMinutes} menit
-    </p>
-  </div>
-
-</div>
+        <div className="bg-primary/10 rounded-xl p-3 text-center">
+          <p className="text-xs text-gray-600">Selanjutnya</p>
+          <p className="font-semibold text-primary">
+            {nextPrayer.name}
+          </p>
+          <p className="text-xs text-gray-500">
+            {formatMinutes(nextMinutes)}
+          </p>
+        </div>
+      </div>
 
       {/* LIST */}
-      <div className="space-y-1.5">
+      <div className="space-y-2.5 overflow-auto">
         {[
           { label: "Subuh", key: "Fajr" },
           { label: "Dzuhur", key: "Dhuhr" },
@@ -184,6 +219,7 @@ useEffect(() => {
 
     </div>
   </div>
+
 </div>
 
 <div className="bg-white rounded-xl p-5">
@@ -206,63 +242,10 @@ useEffect(() => {
 
 </div>
 
-{/* STATISTIK PENGUNJUNG */}
-<div className="px-5 pb-10">
-  <div className="bg-white rounded-xl p-6">
-    <h2 className="text-2xl font-bold text-center">
-      Statistik Pengunjung
-    </h2>
-
-    <div className="mx-auto mt-2 mb-6 w-56 h-[2px] bg-primary rounded-full" />
-
-<div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
-
-      
-      {/* Hari ini */}
-      <div className="rounded-xl border p-5 hover:shadow transition">
-        <CalendarDays className="mx-auto mb-2 w-6 h-6 text-primary" />
-        <p className="text-3xl font-bold">34</p>
-        <p className="text-sm text-muted-foreground">
-          Hari ini
-        </p>
-      </div>
-
-      {/* Minggu ini */}
-      <div className="rounded-xl border p-5 hover:shadow transition">
-        <BarChart3 className="mx-auto mb-2 w-6 h-6 text-primary" />
-        <p className="text-3xl font-bold">210</p>
-        <p className="text-sm text-muted-foreground">
-          Minggu ini
-        </p>
-      </div>
-      
-
-      {/* Bulan ini */}
-      <div className="rounded-xl border p-5 hover:shadow transition">
-        <BarChart3 className="mx-auto mb-2 w-6 h-6 text-primary" />
-        <p className="text-3xl font-bold">890</p>
-        <p className="text-sm text-muted-foreground">
-          Bulan ini
-        </p>
-      </div>
-
-      {/* Total */}
-      <div className="rounded-xl border p-5 hover:shadow transition">
-        <Users className="mx-auto mb-2 w-6 h-6 text-primary" />
-        <p className="text-3xl font-bold">4.532</p>
-        <p className="text-sm text-muted-foreground">
-          Total Pengunjung
-        </p>
-      </div>
-
-    </div>
-  </div>
-</div>
-
 {/* HIGHLIGHT ANGKA */}
-<div className="px-5 pb-14">
+<div className="px-5 py-14">
   <div className="bg-primary text-white rounded-xl p-8">
-<div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
+<div className="grid grid-cols-1 md:grid-cols-4 gap-6 text-center">
 
 
       {/* Anggota */}
@@ -271,6 +254,14 @@ useEffect(() => {
         <p className="text-4xl font-extrabold">100+</p>
         <p className="text-sm opacity-90">
           Anggota Aktif
+        </p>
+      </div>
+
+      <div>
+        <Users className="mx-auto mb-2 w-7 h-7 opacity-90" />
+        <p className="text-4xl font-extrabold">50+</p>
+        <p className="text-sm opacity-90">
+          Pengurus Harian
         </p>
       </div>
 
