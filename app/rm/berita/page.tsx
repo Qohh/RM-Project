@@ -654,7 +654,7 @@ onChange={(e) => {
     placeholder="Masukkan isi berita"
     value={isi}
     onChange={(e) => {
-      if (e.target.value.length <= 1000) {
+      if (e.target.value.length <= 7000) {
         setIsi(e.target.value)
       }
     }}
@@ -676,10 +676,10 @@ onChange={(e) => {
   <div className="flex justify-end text-xs">
     <span
       className={`${
-        isi.length >= 1000 ? "text-red-500" : "text-gray-500"
+        isi.length >= 7000 ? "text-red-500" : "text-gray-500"
       }`}
     >
-      {isi.length}/1000
+      {isi.length}/7000
     </span>
   </div>
 </div>

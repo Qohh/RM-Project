@@ -700,7 +700,7 @@ const filteredData = data.filter((item) => {
         deskripsi.length >= 7000 ? "text-red-500" : "text-gray-500"
       }`}
     >
-      {deskripsi.length}/1000
+      {deskripsi.length}/7000
     </span>
   </div>
 </div>

@@ -6,9 +6,9 @@ import BeritaTerbaru from "@/components/berita/berita_terbaru"
 import { supabase } from "@/lib/supabase"
 
 type PageProps = {
-  params: Promise<{
+  params: {
     id: string
-  }>
+  }
 }
 
 export default async function BeritaDetailPage({ params }: PageProps) {
@@ -81,6 +81,13 @@ export default async function BeritaDetailPage({ params }: PageProps) {
               className="w-full h-full object-cover rounded-lg"
             />
           </div>
+
+        <div className="text-base text-gray-700 text-justify leading-relaxed space-y-4">
+          {data.isi.split("\n").map((para: string, i: number) => (
+            <p key={i} className="indent-8">{para}</p>
+          ))}
+        </div>
+
         </div>
         
         <aside className="w-full lg:w-1/4 space-y-4">
