@@ -91,35 +91,39 @@ const status = getStatus(
       {/* CONTENT */}
       <CardHeader className="space-y-2">
 
-        <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between">
 
-          {/* STATUS BADGE */}
-          <span
-            className={`
-              text-white text-xs px-2 py-1 rounded-full
-              ${
-                status === "upcoming"
-                  ? "bg-yellow-500"
-                  : status === "ongoing"
-                  ? "bg-blue-500"
-                  : "bg-gray-500"
-              }
-            `}
-          >
-            {status === "upcoming"
-              ? "Upcoming"
-              : status === "ongoing"
-              ? "Ongoing"
-              : "Selesai"}
-          </span>
-
-          {/* TANGGAL */}
-          <div className="flex items-center gap-1 text-sm text-muted-foreground">
-            <CalendarDays className="w-4 h-4" />
-            {tanggalMulai}
-          </div>
-
+        {/* TANGGAL */}
+        <div className="flex items-center gap-1 text-sm text-muted-foreground">
+          <CalendarDays className="w-4 h-4" />
+          {new Date(tanggalMulai).toLocaleDateString("id-ID", {
+            day: "numeric",
+            month: "long",
+            year: "numeric",
+          })}
         </div>
+
+        {/* STATUS BADGE */}
+        <span
+          className={`
+            text-white text-xs px-2 py-1 rounded-full
+            ${
+              status === "upcoming"
+                ? "bg-yellow-500"
+                : status === "ongoing"
+                ? "bg-blue-500"
+                : "bg-gray-500"
+            }
+          `}
+        >
+          {status === "upcoming"
+            ? "Upcoming"
+            : status === "ongoing"
+            ? "Ongoing"
+            : "Selesai"}
+        </span>
+
+      </div>
 
         {/* JUDUL */}
         <CardTitle className="line-clamp-3 leading-relaxed">

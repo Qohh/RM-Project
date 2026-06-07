@@ -84,16 +84,17 @@ export default async function BeritaDetailPage({ params }: PageProps) {
 
         <div className="text-base text-gray-700 text-justify leading-relaxed space-y-4">
           {data.isi.split("\n").map((para: string, i: number) => (
-            <p key={i} className="indent-8">{para}</p>
+            <p key={i}>{para}</p>
           ))}
         </div>
 
         </div>
         
         <aside className="w-full lg:w-1/4 space-y-4">
-          <h2 className="text-lg font-semibold">
-            Berita Terbaru
-          </h2>
+          <div className="mb-2">
+              <h2 className="text-xl font-bold">Berita Terbaru</h2>
+              <div className="mt-2 w-full h-[2px] bg-primary rounded-full" />
+            </div>
 
         {latestBerita?.map(item => (
             <BeritaTerbaru

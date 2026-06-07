@@ -1,3 +1,4 @@
+import Image from "next/image"
 import { CalendarDays, CircleChevronLeft } from "lucide-react"
 import { notFound } from "next/navigation"
 import Link from "next/link"
@@ -22,39 +23,35 @@ export default async function KegiatanDetailPage({ params }: PageProps) {
 
   if (error || !data) notFound()
 
-  // 🔥 ambil kegiatan terbaru
   const { data: latestKegiatan } = await supabase
     .from("kegiatan")
     .select("*")
-    .neq("id", numericId)
+    .neq("id", id)
     .eq("status", "publish")
-    .order("tanggal", { ascending: false })
+    .order("tanggal_mulai", { ascending: false })
     .limit(3)
 
-  // 🔥 status kegiatan
   const getStatus = (tanggal: string) => {
     const today = new Date()
     today.setHours(0, 0, 0, 0)
-
     const tgl = new Date(tanggal)
     tgl.setHours(0, 0, 0, 0)
-
     if (tgl > today) return "upcoming"
     if (tgl.getTime() === today.getTime()) return "ongoing"
     return "selesai"
   }
 
-  const status = getStatus(data.tanggal)
+  const status = getStatus(data.tanggal_mulai)
 
   return (
     <div className="mt-24">
       <div className="max-w-6xl mx-auto px-4 md:px-6 py-10">
         <div className="flex flex-col lg:flex-row gap-8">
 
-          {/* 🔥 KONTEN UTAMA */}
+          {/* KONTEN UTAMA */}
           <div className="w-full lg:w-3/4 space-y-6">
 
-            {/* 🔙 BACK */}
+            {/* BACK + JUDUL */}
             <div className="space-y-2">
               <Link
                 href="/kegiatan"
@@ -63,43 +60,37 @@ export default async function KegiatanDetailPage({ params }: PageProps) {
                 <CircleChevronLeft className="w-6 h-6" />
                 Kembali
               </Link>
-
               <h1 className="text-4xl font-bold leading-tight">
                 {data.judul}
               </h1>
             </div>
 
-            {/* 📅 + STATUS */}
+            {/* TANGGAL + STATUS */}
             <div className="flex flex-col gap-2 text-muted-foreground">
-
               <div className="flex items-center gap-2">
                 <CalendarDays className="w-4 h-4" />
-                <span>{data.tanggal}</span>
+                <span>
+                  {new Date(data.tanggal_mulai).toLocaleDateString("id-ID", {
+                    day: "numeric",
+                    month: "long",
+                    year: "numeric",
+                  })}
+                </span>
               </div>
-
-              {/* 🔥 STATUS BADGE */}
               <span
-                className={`
-                  text-white text-xs px-3 py-1 rounded-full w-fit
-                  ${
-                    status === "upcoming"
-                      ? "bg-yellow-500"
-                      : status === "ongoing"
-                      ? "bg-blue-500"
-                      : "bg-gray-500"
-                  }
-                `}
+                className={`text-white text-xs px-3 py-1 rounded-full w-fit ${
+                  status === "upcoming"
+                    ? "bg-yellow-500"
+                    : status === "ongoing"
+                    ? "bg-blue-500"
+                    : "bg-gray-500"
+                }`}
               >
-                {status === "upcoming"
-                  ? "Upcoming"
-                  : status === "ongoing"
-                  ? "Ongoing"
-                  : "Selesai"}
+                {status === "upcoming" ? "Upcoming" : status === "ongoing" ? "Ongoing" : "Selesai"}
               </span>
-
             </div>
 
-            {/* 🖼️ GAMBAR */}
+            {/* GAMBAR */}
             <div className="relative h-[200px] md:h-[400px]">
               <img
                 src={data.gambar?.[0]}
@@ -108,34 +99,38 @@ export default async function KegiatanDetailPage({ params }: PageProps) {
               />
             </div>
 
-            {/* 📝 DESKRIPSI */}
-        <div className="text-base text-gray-700 text-justify leading-relaxed space-y-4">
-          {data.deskripsi.split("\n").map((para: string, i: number) => (
-            <p key={i} className="indent-8">{para}</p>
-          ))}
-        </div>
+            {/* DESKRIPSI */}
+            <div className="text-base text-gray-700 text-justify leading-relaxed space-y-4">
+              {data.deskripsi.split("\n").map((para: string, i: number) => (
+                <p key={i}>{para}</p>
+              ))}
+            </div>
 
           </div>
 
-          {/* 🔥 SIDEBAR */}
+          {/* SIDEBAR */}
           <aside className="w-full lg:w-1/4 space-y-4">
-            <h2 className="text-lg font-semibold">
-              Kegiatan Terbaru
-            </h2>
+            <div className="mb-2">
+              <h2 className="text-xl font-bold">Kegiatan Terbaru</h2>
+              <div className="mt-2 w-full h-[2px] bg-primary rounded-full" />
+            </div>
 
             {latestKegiatan && latestKegiatan.length > 0 ? (
-            latestKegiatan.map((item) => (
-              <KegiatanTerbaru
-                key={item.id}
-                item={item}
-                variant="small"
-              />
-            ))
-          ) : (
-            <p className="text-sm text-gray-500 italic">
-              Tidak ada kegiatan terbaru
-            </p>
-          )}
+              latestKegiatan.map((item) => (
+                <KegiatanTerbaru
+                  key={item.id}
+                  item={{
+                    ...item,
+                    tanggal: item.tanggal_mulai,
+                  }}
+                  variant="small"
+                />
+              ))
+            ) : (
+              <p className="text-sm text-gray-500 italic">
+                Tidak ada kegiatan terbaru
+              </p>
+            )}
           </aside>
 
         </div>

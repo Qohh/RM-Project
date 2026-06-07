@@ -59,16 +59,20 @@ export default function BeritaCard({
 
 <CardHeader className="space-y-2">
 
-  <div className="flex items-center justify-between">
-    <span className="bg-primary text-white text-xs px-2 py-1 rounded-full">
-      {kategori}
-    </span>
+    <div className="flex items-center justify-between">
+      <div className="flex items-center gap-1 text-sm text-muted-foreground">
+        <CalendarDays className="w-4 h-4" />
+        {new Date(tanggal).toLocaleDateString("id-ID", {
+          day: "numeric",
+          month: "long",
+          year: "numeric",
+        })}
+      </div>
 
-    <div className="flex items-center gap-1 text-sm text-muted-foreground">
-      <CalendarDays className="w-5 h-5" />
-      {tanggal}
+      <span className="bg-primary text-white text-xs px-2 py-1 rounded-full">
+        {kategori}
+      </span>
     </div>
-  </div>
 
   <CardTitle className="line-clamp-3 leading-relaxed">
     {judul}

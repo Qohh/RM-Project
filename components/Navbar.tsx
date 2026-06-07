@@ -157,7 +157,7 @@ useEffect(() => {
                     rel="noopener noreferrer"
                     className="flex items-center gap-2 px-4 py-2 hover:bg-gray-100"
                   > <Image
-                      src="/icons/logo-instagram.png"
+                      src="/icons/instagram.png"
                       alt="Instagram"
                       width={20}
                       height={20}
@@ -172,7 +172,7 @@ useEffect(() => {
                     rel="noopener noreferrer"
                     className="flex items-center gap-2 px-4 py-2 hover:bg-gray-100"
                   > <Image
-                      src="/icons/logo-facebook.png"
+                      src="/icons/facebook.png"
                       alt="Facebook"
                       width={20}
                       height={20}
@@ -187,7 +187,7 @@ useEffect(() => {
                     rel="noopener noreferrer"
                     className="flex items-center gap-2 px-4 py-2 hover:bg-gray-100"
                   > <Image
-                      src="/icons/logo-youtube.png"
+                      src="/icons/youtube.png"
                       alt="Youtube"
                       width={20}
                       height={20}
@@ -202,7 +202,7 @@ useEffect(() => {
                     rel="noopener noreferrer"
                     className="flex items-center gap-2 px-4 py-2 hover:bg-gray-100"
                   > <Image
-                      src="/icons/logo-whatsapp.png"
+                      src="/icons/whatsapp.png"
                       alt="Whatsapp"
                       width={20}
                       height={20}
@@ -217,7 +217,7 @@ useEffect(() => {
                   rel="noopener noreferrer"
                   className="flex items-center gap-2 px-4 py-2 hover:bg-gray-100"
                   ><Image
-                      src="/icons/logo-tiktok.png"
+                      src="/icons/tiktok.png"
                       alt="Tiktok"
                       width={22}
                       height={22}

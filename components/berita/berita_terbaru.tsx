@@ -18,15 +18,13 @@ type Props = {
   variant?: "small" | "large"
 }
 
-export default function BeritaTerbaru({
-  item,
-  variant = "small",
-}: Props) {
+export default function BeritaTerbaru({ item, variant = "small" }: Props) {
   return (
     <Link href={`/berita/${item.id}`} className="block group">
-      <div className="border rounded-xl p-3 space-y-3 transition hover:bg-muted">
+      <div className={`border rounded-xl p-3 transition hover:bg-muted
+        ${variant === "large" ? "flex flex-col h-full" : "space-y-3"}`}>
 
-        {/* 🖼️ GAMBAR */}
+        {/* GAMBAR */}
         <div className="relative w-full aspect-video rounded-lg overflow-hidden">
           <Image
             src={item.gambar?.[0] || "/placeholder.png"}
@@ -36,36 +34,33 @@ export default function BeritaTerbaru({
           />
         </div>
 
-        {/* 📅 + 🏷️ */}
-        <div className="flex items-center justify-between text-xs text-muted-foreground">
-
-          {/* tanggal */}
+        {/* TANGGAL + KATEGORI */}
+        <div className="flex items-center justify-between text-xs text-muted-foreground mt-3">
           <div className="flex items-center gap-1">
             <CalendarDays className="w-3 h-3" />
-            <span>{item.tanggal}</span>
+            <span>
+              {new Date(item.tanggal).toLocaleDateString("id-ID", {
+                day: "numeric",
+                month: "long",
+                year: "numeric",
+              })}
+            </span>
           </div>
-
-          {/* kategori */}
           <span className="bg-primary/10 text-primary px-2 py-0.5 rounded-full">
             {item.kategori?.nama || "Umum"}
           </span>
         </div>
 
-        {/* 📰 JUDUL */}
-        <p className="font-semibold text-sm line-clamp-3 leading-snug group-hover:text-primary transition">
-          {item.judul}
-        </p>
-
-        {/* 📄 KONTEN (optional untuk large) */}
-        {variant === "large" && (
-          <p className="text-sm text-muted-foreground line-clamp-3">
-            {item.konten}
+        {/* JUDUL */}
+        <div className={variant === "large" ? "flex-1 mt-2" : "mt-2"}>
+          <p className="font-semibold text-sm line-clamp-3 leading-snug group-hover:text-primary transition">
+            {item.judul}
           </p>
-        )}
+        </div>
 
-        {/* 👉 CTA */}
+        {/* CTA — hanya large */}
         {variant === "large" && (
-          <span className="text-primary text-sm font-medium hover:underline">
+          <span className="text-primary text-sm font-medium hover:underline mt-3 block">
             Lihat detail →
           </span>
         )}
