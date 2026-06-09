@@ -10,7 +10,7 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: "https",
-        hostname: "i.ibb.co", // 🔥 ImgBB
+        hostname: "i.ibb.co", 
       },
     ],
   },

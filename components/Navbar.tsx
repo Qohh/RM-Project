@@ -152,7 +152,7 @@ useEffect(() => {
               <ul className="py-2 text-sm text-gray-700">
                 <li>
                   <a
-                    href="https://www.instagram.com/remajamujahidin_kalbar/"
+                    href="https://www.instagram.com/remajamujahidin.kalbar/"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center gap-2 px-4 py-2 hover:bg-gray-100"
@@ -315,7 +315,7 @@ useEffect(() => {
 
       <div className="w-full bg-primary-dark overflow-hidden">
         <p className="animate-marquee whitespace-nowrap text-white px-4 py-1 text-sm">
-            Selamat datang di website Remaja Mujahidin Kalimantan Barat &nbsp; • &nbsp; Organisasi Pengembangan Potensi & Pembinaan Remaja Islam
+            Selamat datang di website Remaja Mujahidin Kalimantan Barat &nbsp; • &nbsp; Organisasi Pembinaan dan Pengembangan Potensi Remaja Islam
         </p>
       </div>
     </header>
@@ -448,7 +448,7 @@ useEffect(() => {
         {
           label: "Instagram",
           icon: "/icons/instagram.png",
-          href: "https://www.instagram.com/remajamujahidin_kalbar/",
+          href: "https://www.instagram.com/remajamujahidin.kalbar/",
         },
         {
           label: "Facebook",

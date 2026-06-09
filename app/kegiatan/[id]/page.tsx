@@ -4,6 +4,7 @@ import { notFound } from "next/navigation"
 import Link from "next/link"
 import KegiatanTerbaru from "@/components/kegiatan/kegiatan_terbaru"
 import { supabase } from "@/lib/supabase"
+import ImageCarousel from "@/components/berita/image_carousel"
 
 type PageProps = {
   params: {
@@ -91,13 +92,7 @@ export default async function KegiatanDetailPage({ params }: PageProps) {
             </div>
 
             {/* GAMBAR */}
-            <div className="relative h-[200px] md:h-[400px]">
-              <img
-                src={data.gambar?.[0]}
-                alt={data.judul}
-                className="w-full h-full object-cover rounded-lg"
-              />
-            </div>
+<ImageCarousel images={data.gambar ?? []} alt={data.judul} />
 
             {/* DESKRIPSI */}
             <div className="text-base text-gray-700 text-justify leading-relaxed space-y-4">

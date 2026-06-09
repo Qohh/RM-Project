@@ -1,4 +1,4 @@
-import Image from "next/image"
+
 import Link from "next/link"
 import { CalendarDays } from "lucide-react"
 
@@ -26,11 +26,10 @@ export default function BeritaTerbaru({ item, variant = "small" }: Props) {
 
         {/* GAMBAR */}
         <div className="relative w-full aspect-video rounded-lg overflow-hidden">
-          <Image
-            src={item.gambar?.[0] || "/placeholder.png"}
+          <img
+            src={item.gambar[0] || "/placeholder.png"}
             alt={item.judul}
-            fill
-            className="object-cover group-hover:scale-105 transition"
+            className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
           />
         </div>
 

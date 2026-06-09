@@ -64,8 +64,8 @@ export default function BerandaPage() {
   useEffect(() => {
     async function fetchContent() {
       const [beritaRes, kegiatanRes] = await Promise.all([
-        supabase.from("berita").select("*").order("tanggal", { ascending: false }).limit(2),
-        supabase.from("kegiatan").select("*").order("tanggal_mulai", { ascending: false }).limit(2),
+        supabase.from("berita").select("*").eq("status", "publish").order("tanggal", { ascending: false }).limit(2),
+        supabase.from("kegiatan").select("*").eq("status", "publish").order("tanggal_mulai", { ascending: false }).limit(2),
       ])
       if (beritaRes.data)   setBeritaData(beritaRes.data)
       if (kegiatanRes.data) setKegiatanData(kegiatanRes.data)

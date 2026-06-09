@@ -1,4 +1,4 @@
-import Image from "next/image"
+
 import Link from "next/link"
 import { CalendarDays } from "lucide-react"
 
@@ -45,11 +45,10 @@ return (
 
         {/* GAMBAR + OVERLAY HOVER */}
         <div className="relative w-full aspect-video rounded-lg overflow-hidden">
-          <Image
+          <img
             src={gambar[0] || "/placeholder.png"}
             alt={item.judul}
-            fill
-            className="object-cover group-hover:scale-105 transition duration-300"
+            className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
           />
           {/* Overlay "Lihat selengkapnya" */}
           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/50 transition-all duration-300 flex items-center justify-center">

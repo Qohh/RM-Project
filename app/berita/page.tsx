@@ -1,8 +1,8 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef, useCallback } from "react"
 import BeritaCard from "@/components/berita/berita_card"
-import { Search, Newspaper } from "lucide-react"
+import { Search, Newspaper, Loader2 } from "lucide-react"
 import { supabase } from "@/lib/supabase"
 import {
   Select,
@@ -22,52 +22,113 @@ type Berita = {
   }
 }
 
+const PAGE_SIZE = 8
+
 export default function BeritaPage() {
   const [search, setSearch] = useState("")
   const [dataBerita, setDataBerita] = useState<Berita[]>([])
   const [kategoriList, setKategoriList] = useState<string[]>([])
   const [selectedKategori, setSelectedKategori] = useState("all")
+  const [page, setPage] = useState(0)
+  const [hasMore, setHasMore] = useState(true)
+  const [loading, setLoading] = useState(false)
+  const [totalCount, setTotalCount] = useState(0)
 
-  const filteredBerita = dataBerita.filter((item) => {
-    const matchSearch = item.judul.toLowerCase().includes(search.toLowerCase())
-    const matchKategori =
-      selectedKategori === "all" || item.kategori?.nama === selectedKategori
-    return matchSearch && matchKategori
-  })
+  const sentinelRef = useRef<HTMLDivElement>(null)
+  const observerRef = useRef<IntersectionObserver | null>(null)
+  const filterRef = useRef({ search, selectedKategori })
 
   useEffect(() => {
-    const fetchData = async () => {
-      const [beritaRes, kategoriRes] = await Promise.all([
-        supabase
-          .from("berita")
-          .select(`*, kategori(nama)`)
-          .eq("status", "publish")
-          .order("tanggal", { ascending: false }),
-        supabase
-          .from("kategori")
-          .select("nama")
-          .order("nama", { ascending: true }),
-      ])
+    filterRef.current = { search, selectedKategori }
+  }, [search, selectedKategori])
 
-      if (beritaRes.error) {
-        console.error("Error berita:", beritaRes.error)
-      } else {
-        setDataBerita(beritaRes.data)
-      }
+  // Fetch kategori sekali saja
+  useEffect(() => {
+    const fetchKategori = async () => {
+      const { data, error } = await supabase
+        .from("kategori")
+        .select("nama")
+        .order("nama", { ascending: true })
 
-      if (kategoriRes.error) {
-        console.error("Error kategori:", kategoriRes.error)
-      } else {
-        const semuaKategori = [
-          "all",
-          ...kategoriRes.data.map((k: any) => k.nama),
-        ]
-        setKategoriList(semuaKategori)
+      if (!error && data) {
+        setKategoriList(["all", ...data.map((k: any) => k.nama)])
       }
     }
-
-    fetchData()
+    fetchKategori()
   }, [])
+
+  const fetchPage = useCallback(async (pageIndex: number) => {
+    setLoading(true)
+    const { search, selectedKategori } = filterRef.current
+
+    let query = supabase
+      .from("berita")
+      .select(`*, kategori(nama)`, { count: "exact" })
+      .eq("status", "publish")
+      .order("tanggal", { ascending: false })
+      .range(pageIndex * PAGE_SIZE, (pageIndex + 1) * PAGE_SIZE - 1)
+
+    if (search) {
+      query = query.ilike("judul", `%${search}%`)
+    }
+
+    if (selectedKategori !== "all") {
+      query = query.eq("kategori.nama", selectedKategori)
+    }
+
+    const { data, error, count } = await query
+
+    if (error) {
+      console.error("Error berita:", error)
+      setLoading(false)
+      return
+    }
+
+    const filtered = (data ?? []).filter((item: Berita) =>
+      selectedKategori === "all" ? true : item.kategori?.nama === selectedKategori
+    )
+
+    setDataBerita((prev) =>
+      pageIndex === 0 ? filtered : [...prev, ...filtered]
+    )
+    setTotalCount(count ?? 0)
+    setHasMore((pageIndex + 1) * PAGE_SIZE < (count ?? 0))
+    setLoading(false)
+  }, [])
+
+  // Reset saat filter/search berubah
+  useEffect(() => {
+    setDataBerita([])
+    setPage(0)
+    setHasMore(true)
+    fetchPage(0)
+  }, [search, selectedKategori, fetchPage])
+
+  // Fetch saat page bertambah
+  useEffect(() => {
+    if (page === 0) return
+    fetchPage(page)
+  }, [page, fetchPage])
+
+  // Setup IntersectionObserver
+  useEffect(() => {
+    if (observerRef.current) observerRef.current.disconnect()
+
+    observerRef.current = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore && !loading) {
+          setPage((prev) => prev + 1)
+        }
+      },
+      { rootMargin: "200px" }
+    )
+
+    if (sentinelRef.current) {
+      observerRef.current.observe(sentinelRef.current)
+    }
+
+    return () => observerRef.current?.disconnect()
+  }, [hasMore, loading])
 
   return (
     <div className="max-w-7xl mx-auto mt-24 p-5 space-y-5 ml-5">
@@ -79,7 +140,7 @@ export default function BeritaPage() {
           </h1>
           <span className="flex flex-row gap-2 text-xs md:text-base text-muted-foreground items-center">
             <Newspaper className="w-3 md:w-5 h-3 md:h-5" />
-            {filteredBerita.length} berita tersedia
+            {totalCount} berita tersedia
           </span>
         </div>
 
@@ -122,8 +183,8 @@ export default function BeritaPage() {
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-        {filteredBerita.length > 0 ? (
-          filteredBerita.map((item) => (
+        {dataBerita.length > 0 ? (
+          dataBerita.map((item) => (
             <BeritaCard
               key={item.id}
               id={item.id}
@@ -133,11 +194,23 @@ export default function BeritaPage() {
               image={item.gambar?.[0]}
             />
           ))
-        ) : (
+        ) : !loading ? (
           <p className="col-span-2 lg:col-span-4 text-center text-gray-500 italic">
             {selectedKategori !== "all"
               ? `Tidak ada berita untuk kategori "${selectedKategori}"`
               : "Tidak ada berita ditemukan"}
+          </p>
+        ) : null}
+      </div>
+
+      {/* Sentinel + loading indicator */}
+      <div ref={sentinelRef} className="flex justify-center py-6">
+        {loading && (
+          <Loader2 className="w-6 h-6 animate-spin text-primary" />
+        )}
+        {!hasMore && dataBerita.length > 0 && (
+          <p className="text-sm text-muted-foreground">
+            Semua berita sudah ditampilkan
           </p>
         )}
       </div>
