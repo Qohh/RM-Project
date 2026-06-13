@@ -923,11 +923,11 @@ export default function KegiatanPage() {
                   {(() => {
                     const progress = getProgress(item.tanggal_mulai, item.waktu_mulai, item.tanggal_selesai, item.waktu_selesai);
                     return (
-                      <span className={`px-3 py-1 text-xs rounded-full font-medium ${
-                        progress === "Upcoming" ? "bg-yellow-100 text-yellow-700"
-                          : progress === "Ongoing" ? "bg-blue-100 text-blue-700"
-                          : "bg-green-100 text-green-700"
-                      }`}>{progress}</span>
+                    <span className={`px-3 py-1 text-xs rounded-full font-medium ${
+                      progress === "Upcoming" ? "bg-[#FAEEDA] text-[#854F0B]"
+                        : progress === "Ongoing" ? "bg-[#E6F1FB] text-[#185FA5]"
+                        : "bg-[#E1F5EE] text-[#0F6E56]"
+                    }`}>{progress}</span>
                     );
                   })()}
                 </div>

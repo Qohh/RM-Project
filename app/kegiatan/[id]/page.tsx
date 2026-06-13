@@ -79,12 +79,12 @@ export default async function KegiatanDetailPage({ params }: PageProps) {
                 </span>
               </div>
               <span
-                className={`text-white text-xs px-3 py-1 rounded-full w-fit ${
+                className={`text-xs px-3 py-1 rounded-full w-fit font-medium ${
                   status === "upcoming"
-                    ? "bg-yellow-500"
+                    ? "bg-[#FAEEDA] text-[#854F0B]"
                     : status === "ongoing"
-                    ? "bg-blue-500"
-                    : "bg-gray-500"
+                    ? "bg-[#E6F1FB] text-[#185FA5]"
+                    : "bg-[#E1F5EE] text-[#0F6E56]"
                 }`}
               >
                 {status === "upcoming" ? "Upcoming" : status === "ongoing" ? "Ongoing" : "Selesai"}

@@ -105,23 +105,23 @@ const status = getStatus(
 
         {/* STATUS BADGE */}
         <span
-          className={`
-            text-white text-xs px-2 py-1 rounded-full
-            ${
-              status === "upcoming"
-                ? "bg-yellow-500"
-                : status === "ongoing"
-                ? "bg-blue-500"
-                : "bg-gray-500"
-            }
-          `}
-        >
-          {status === "upcoming"
-            ? "Upcoming"
-            : status === "ongoing"
-            ? "Ongoing"
-            : "Selesai"}
-        </span>
+  className={`
+    text-xs px-3 py-1 rounded-full font-medium
+    ${
+      status === "upcoming"
+        ? "bg-[#FAEEDA] text-[#854F0B]"
+        : status === "ongoing"
+        ? "bg-[#E6F1FB] text-[#185FA5]"
+        : "bg-[#E1F5EE] text-[#0F6E56]"
+    }
+  `}
+>
+  {status === "upcoming"
+    ? "Upcoming"
+    : status === "ongoing"
+    ? "Ongoing"
+    : "Selesai"}
+</span>
 
       </div>
 
