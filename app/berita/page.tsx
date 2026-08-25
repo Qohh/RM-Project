@@ -3,7 +3,6 @@
 import { useState, useEffect, useRef, useCallback } from "react"
 import BeritaCard from "@/components/berita/berita_card"
 import { Search, Newspaper, Loader2 } from "lucide-react"
-import { supabase } from "@/lib/supabase"
 import {
   Select,
   SelectContent,
@@ -44,57 +43,66 @@ export default function BeritaPage() {
 
   // Fetch kategori sekali saja
   useEffect(() => {
-    const fetchKategori = async () => {
-      const { data, error } = await supabase
-        .from("kategori")
-        .select("nama")
-        .order("nama", { ascending: true })
+  const fetchKategori = async () => {
+    try {
+      const response = await fetch("/api/kategori")
 
-      if (!error && data) {
-        setKategoriList(["all", ...data.map((k: any) => k.nama)])
+      if (!response.ok) {
+        throw new Error("Gagal mengambil kategori")
       }
+
+      const data = await response.json()
+
+      setKategoriList([
+        "all",
+        ...data.map((k: { nama: string }) => k.nama),
+      ])
+    } catch (error) {
+      console.error("Error kategori:", error)
     }
-    fetchKategori()
-  }, [])
+  }
+
+  fetchKategori()
+}, [])
 
   const fetchPage = useCallback(async (pageIndex: number) => {
-    setLoading(true)
-    const { search, selectedKategori } = filterRef.current
+  setLoading(true)
 
-    let query = supabase
-      .from("berita")
-      .select(`*, kategori(nama)`, { count: "exact" })
-      .eq("status", "publish")
-      .order("tanggal", { ascending: false })
-      .range(pageIndex * PAGE_SIZE, (pageIndex + 1) * PAGE_SIZE - 1)
+  const { search, selectedKategori } = filterRef.current
 
-    if (search) {
-      query = query.ilike("judul", `%${search}%`)
+  try {
+    const params = new URLSearchParams({
+      page: pageIndex.toString(),
+      search,
+      kategori: selectedKategori,
+    })
+
+    const response = await fetch(`/api/berita?${params.toString()}`)
+
+    if (!response.ok) {
+      throw new Error("Gagal mengambil berita")
     }
 
-    if (selectedKategori !== "all") {
-      query = query.eq("kategori.nama", selectedKategori)
-    }
+    const result = await response.json()
 
-    const { data, error, count } = await query
-
-    if (error) {
-      console.error("Error berita:", error)
-      setLoading(false)
-      return
-    }
-
-    const filtered = (data ?? []).filter((item: Berita) =>
-      selectedKategori === "all" ? true : item.kategori?.nama === selectedKategori
-    )
+    const data = result.data ?? []
+    const count = result.count ?? 0
 
     setDataBerita((prev) =>
-      pageIndex === 0 ? filtered : [...prev, ...filtered]
+      pageIndex === 0 ? data : [...prev, ...data]
     )
-    setTotalCount(count ?? 0)
-    setHasMore((pageIndex + 1) * PAGE_SIZE < (count ?? 0))
+
+    setTotalCount(count)
+
+    setHasMore(
+      (pageIndex + 1) * PAGE_SIZE < count
+    )
+  } catch (error) {
+    console.error("Error berita:", error)
+  } finally {
     setLoading(false)
-  }, [])
+  }
+}, [])
 
   // Reset saat filter/search berubah
   useEffect(() => {

@@ -3,7 +3,6 @@
 import { useState, useEffect, useRef, useCallback } from "react"
 import KegiatanCard from "@/components/kegiatan/kegiatan_card"
 import { Search, CalendarDays, Loader2 } from "lucide-react"
-import { supabase } from "@/lib/supabase"
 import {
   Select,
   SelectContent,
@@ -32,46 +31,42 @@ export default function KegiatanPage() {
     filterRef.current = { search, filterStatus }
   }, [search, filterStatus])
 
-  const fetchPage = useCallback(async (pageIndex: number) => {
-    setLoading(true)
-    const { search, filterStatus } = filterRef.current
+const fetchPage = useCallback(async (pageIndex: number) => {
+  setLoading(true)
 
-    const now = new Date().toISOString()
-    let query = supabase
-      .from("kegiatan")
-      .select("*", { count: "exact" })
-      .eq("status", "publish")
-      .order("tanggal_mulai", { ascending: false })
-      .range(pageIndex * PAGE_SIZE, (pageIndex + 1) * PAGE_SIZE - 1)
+  const { search, filterStatus } = filterRef.current
 
-    if (search) {
-      query = query.ilike("judul", `%${search}%`)
+  try {
+    const params = new URLSearchParams({
+      page: pageIndex.toString(),
+      limit: PAGE_SIZE.toString(),
+      search,
+      status: filterStatus,
+    })
+
+    const response = await fetch(`/api/kegiatan?${params.toString()}`)
+
+    if (!response.ok) {
+      throw new Error("Gagal mengambil data kegiatan")
     }
 
-    // Filter status dilakukan di Supabase langsung
-    if (filterStatus === "upcoming") {
-      query = query.gt("tanggal_mulai", now.split("T")[0])
-    } else if (filterStatus === "selesai") {
-      query = query.lt("tanggal_selesai", now.split("T")[0])
-    }
-    // "ongoing" tetap filter di client karena butuh gabungan tanggal+waktu
+    const result = await response.json()
 
-    const { data, error, count } = await query
+    let filtered = result.data ?? []
 
-    if (error) {
-      console.error("Error:", error)
-      setLoading(false)
-      return
-    }
-
-    let filtered = data ?? []
-
-    // Filter ongoing lebih presisi di client
+    // Filter ongoing tetap dilakukan di client
     if (filterStatus === "ongoing") {
       const nowDate = new Date()
-      filtered = filtered.filter((item) => {
-        const start = new Date(`${item.tanggal_mulai}T${item.waktu_mulai}`)
-        const end = new Date(`${item.tanggal_selesai}T${item.waktu_selesai}`)
+
+      filtered = filtered.filter((item: any) => {
+        const start = new Date(
+          `${item.tanggal_mulai}T${item.waktu_mulai}`
+        )
+
+        const end = new Date(
+          `${item.tanggal_selesai}T${item.waktu_selesai}`
+        )
+
         return nowDate >= start && nowDate <= end
       })
     }
@@ -79,10 +74,18 @@ export default function KegiatanPage() {
     setDataKegiatan((prev) =>
       pageIndex === 0 ? filtered : [...prev, ...filtered]
     )
-    setTotalCount(count ?? 0)
-    setHasMore((pageIndex + 1) * PAGE_SIZE < (count ?? 0))
+
+    setTotalCount(result.totalCount ?? 0)
+
+    setHasMore(
+      (pageIndex + 1) * PAGE_SIZE < (result.totalCount ?? 0)
+    )
+  } catch (error) {
+    console.error("Error:", error)
+  } finally {
     setLoading(false)
-  }, [])
+  }
+}, [])
 
   // Reset saat filter/search berubah
   useEffect(() => {

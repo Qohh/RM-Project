@@ -1,9 +1,8 @@
-import Image from "next/image"
+import { prisma } from "@/lib/prisma"
 import { CalendarDays, CircleChevronLeft } from "lucide-react"
 import { notFound } from "next/navigation"
 import Link from "next/link"
 import KegiatanTerbaru from "@/components/kegiatan/kegiatan_terbaru"
-import { supabase } from "@/lib/supabase"
 import ImageCarousel from "@/components/berita/image_carousel"
 
 type PageProps = {
@@ -14,33 +13,42 @@ type PageProps = {
 
 export default async function KegiatanDetailPage({ params }: PageProps) {
   const { id } = await params
-  const numericId = Number(id)
 
-  const { data, error } = await supabase
-    .from("kegiatan")
-    .select("*")
-    .eq("id", id)
-    .single()
+const data = await prisma.kegiatan.findUnique({
+  where: {
+    id,
+  },
+})
 
-  if (error || !data) notFound()
+if (!data) notFound()
 
-  const { data: latestKegiatan } = await supabase
-    .from("kegiatan")
-    .select("*")
-    .neq("id", id)
-    .eq("status", "publish")
-    .order("tanggal_mulai", { ascending: false })
-    .limit(3)
+const latestKegiatan = await prisma.kegiatan.findMany({
+  where: {
+    id: {
+      not: id,
+    },
+    status: "publish",
+  },
+  orderBy: {
+    tanggal_mulai: "desc",
+  },
+  take: 3,
+})
 
-  const getStatus = (tanggal: string) => {
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
-    const tgl = new Date(tanggal)
-    tgl.setHours(0, 0, 0, 0)
-    if (tgl > today) return "upcoming"
-    if (tgl.getTime() === today.getTime()) return "ongoing"
-    return "selesai"
-  }
+const getStatus = (tanggal: Date | null) => {
+  if (!tanggal) return "selesai"
+
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+
+  const tgl = new Date(tanggal)
+  tgl.setHours(0, 0, 0, 0)
+
+  if (tgl > today) return "upcoming"
+  if (tgl.getTime() === today.getTime()) return "ongoing"
+
+  return "selesai"
+}
 
   const status = getStatus(data.tanggal_mulai)
 
@@ -71,11 +79,13 @@ export default async function KegiatanDetailPage({ params }: PageProps) {
               <div className="flex items-center gap-2">
                 <CalendarDays className="w-4 h-4" />
                 <span>
-                  {new Date(data.tanggal_mulai).toLocaleDateString("id-ID", {
-                    day: "numeric",
-                    month: "long",
-                    year: "numeric",
-                  })}
+{data.tanggal_mulai
+  ? new Date(data.tanggal_mulai).toLocaleDateString("id-ID", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    })
+  : "-"}
                 </span>
               </div>
               <span
@@ -91,14 +101,28 @@ export default async function KegiatanDetailPage({ params }: PageProps) {
               </span>
             </div>
 
-            {/* GAMBAR */}
-<ImageCarousel images={data.gambar ?? []} alt={data.judul} />
+<ImageCarousel
+  images={
+    Array.isArray(data.gambar)
+      ? data.gambar.filter(
+          (item): item is string => typeof item === "string"
+        )
+      : []
+  }
+  alt={data.judul}
+/>
 
             {/* DESKRIPSI */}
             <div className="text-base text-gray-700 text-justify leading-relaxed space-y-4">
-              {data.deskripsi.split("\n").map((para: string, i: number) => (
-                <p key={i}>{para}</p>
-              ))}
+              {data.deskripsi ? (
+  data.deskripsi.split("\n").map((para: string, i: number) => (
+    <p key={i}>{para}</p>
+  ))
+) : (
+  <p className="text-gray-400 italic">
+    Belum ada deskripsi kegiatan
+  </p>
+)}
             </div>
 
           </div>
@@ -113,13 +137,21 @@ export default async function KegiatanDetailPage({ params }: PageProps) {
             {latestKegiatan && latestKegiatan.length > 0 ? (
               latestKegiatan.map((item) => (
                 <KegiatanTerbaru
-                  key={item.id}
-                  item={{
-                    ...item,
-                    tanggal: item.tanggal_mulai,
-                  }}
-                  variant="small"
-                />
+  key={item.id}
+  item={{
+    id: item.id,
+    judul: item.judul,
+    gambar: Array.isArray(item.gambar)
+      ? item.gambar.filter(
+          (gambar): gambar is string => typeof gambar === "string"
+        )
+      : [],
+    tanggal: item.tanggal_mulai
+      ? item.tanggal_mulai.toISOString()
+      : "",
+  }}
+  variant="small"
+/>
               ))
             ) : (
               <p className="text-sm text-gray-500 italic">

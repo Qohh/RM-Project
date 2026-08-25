@@ -7,7 +7,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import { supabase } from "@/lib/supabase"
 import { useEffect, useState } from "react"
 import PengurusSection from "@/components/pengurus/pengurus_card"
 import Footer from "@/components/footer"
@@ -15,29 +14,24 @@ import Footer from "@/components/footer"
 export default function StrukturKepengurusan() {
   const [pengurus, setPengurus] = useState<any[]>([])
 
-  useEffect(() => {
-    const fetchPengurus = async () => {
-      const { data, error } = await supabase
-        .from("pengurus")
-        .select(`
-          id,
-          nama,
-          angkatan,
-          gambar,
-          riwayat,
-          jabatan:jabatan_id (nama),
-          bidang:bidang_id (nama)
-        `)
+useEffect(() => {
+  const fetchPengurus = async () => {
+    try {
+      const response = await fetch("/api/pengurus")
 
-      if (error) {
-        console.error(error)
-      } else {
-        setPengurus(data || [])
+      if (!response.ok) {
+        throw new Error("Gagal mengambil data pengurus")
       }
-    }
 
-    fetchPengurus()
-  }, [])
+      const data = await response.json()
+      setPengurus(data || [])
+    } catch (error) {
+      console.error(error)
+    }
+  }
+
+  fetchPengurus()
+}, [])
 
  // 🔥 1. DATA INTI
 const pengurusInti = pengurus.filter((d) => !d.bidang);

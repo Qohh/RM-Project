@@ -7,29 +7,29 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import { supabase } from "@/lib/supabase"
 import { useEffect, useState } from "react"
 
 export default function Sejarah() {
   const [sejarah, setSejarah] = useState("")
 
-  useEffect(() => {
-    const fetchProfil = async () => {
-      const { data, error } = await supabase
-        .from("profil")
-        .select("sejarah")
-        .eq("id", 1)
-        .single()
+useEffect(() => {
+  const fetchProfil = async () => {
+    try {
+      const response = await fetch("/api/profil")
 
-      if (error) {
-        console.error(error)
-      } else {
-        setSejarah(data.sejarah || "")
+      if (!response.ok) {
+        throw new Error("Gagal mengambil data profil")
       }
-    }
 
-    fetchProfil()
-  }, [])
+      const data = await response.json()
+      setSejarah(data.sejarah || "")
+    } catch (error) {
+      console.error(error)
+    }
+  }
+
+  fetchProfil()
+}, [])
 
   return (
     <div className="mt-24">

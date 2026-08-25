@@ -3,7 +3,7 @@ import Link from "next/link"
 import { CalendarDays } from "lucide-react"
 
 type Kegiatan = {
-  id: number
+  id: string
   judul: string
   gambar: string[]
   tanggal: string

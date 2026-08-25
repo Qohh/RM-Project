@@ -7,29 +7,29 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import { supabase } from "@/lib/supabase"
 import { useEffect, useState } from "react"
 
 export default function Tujuan() {
   const [tujuan, setTujuan] = useState("")
 
   useEffect(() => {
-    const fetchProfil = async () => {
-      const { data, error } = await supabase
-        .from("profil")
-        .select("tujuan")
-        .eq("id", 1)
-        .single()
+  const fetchProfil = async () => {
+    try {
+      const response = await fetch("/api/profil")
 
-      if (error) {
-        console.error(error)
-      } else {
-        setTujuan(data.tujuan || "")
+      if (!response.ok) {
+        throw new Error("Gagal mengambil data profil")
       }
-    }
 
-    fetchProfil()
-  }, [])
+      const data = await response.json()
+      setTujuan(data.tujuan || "")
+    } catch (error) {
+      console.error(error)
+    }
+  }
+
+  fetchProfil()
+}, [])
 
   return (
     <div className="mt-24">

@@ -4,31 +4,32 @@ import {
   Card,
   CardContent,
 } from "@/components/ui/card"
-import { supabase } from "@/lib/supabase"
 import { useEffect, useState } from "react"
 
 export default function VisiMisi() {
   const [visi, setVisi] = useState("")
   const [misi, setMisi] = useState("")
 
-  useEffect(() => {
-    const fetchProfil = async () => {
-      const { data, error } = await supabase
-        .from("profil")
-        .select("visi, misi")
-        .eq("id", 1)
-        .single()
+useEffect(() => {
+  const fetchProfil = async () => {
+    try {
+      const response = await fetch("/api/profil")
 
-      if (error) {
-        console.error(error)
-      } else {
-        setVisi(data.visi || "")
-        setMisi(data.misi || "")
+      if (!response.ok) {
+        throw new Error("Gagal mengambil data profil")
       }
-    }
 
-    fetchProfil()
-  }, [])
+      const data = await response.json()
+
+      setVisi(data.visi || "")
+      setMisi(data.misi || "")
+    } catch (error) {
+      console.error(error)
+    }
+  }
+
+  fetchProfil()
+}, [])
 
   return (
     <div className="mt-24">

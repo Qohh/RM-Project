@@ -6,11 +6,170 @@ datasource db {
   provider = "postgresql"
 }
 
-model Kegiatan {
-  id          Int      @id @default(autoincrement())
-  judul       String
-  deskripsi   String?
-  tanggal     DateTime
-  pembuat     String
-  createdAt   DateTime @default(now())
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model berita {
+  id          String    @id @db.Uuid
+  kategori_id BigInt?
+  judul       String    @db.VarChar(255)
+  isi         String
+  gambar      Json?     @db.Json
+  status      String    @default("draft") @db.VarChar(255)
+  tanggal     DateTime? @db.Date
+  created_at  DateTime? @db.Timestamp(0)
+  updated_at  DateTime? @db.Timestamp(0)
+  kategori    kategori? @relation(fields: [kategori_id], references: [id], onUpdate: NoAction, map: "berita_kategori_id_foreign")
+}
+
+model bidang {
+  id         BigInt     @id @default(autoincrement())
+  nama       String     @db.VarChar(255)
+  created_at DateTime?  @db.Timestamp(0)
+  updated_at DateTime?  @db.Timestamp(0)
+  pengurus   pengurus[]
+}
+
+model cache {
+  key        String @id @db.VarChar(255)
+  value      String
+  expiration Int
+
+  @@index([expiration], map: "cache_expiration_index")
+}
+
+model cache_locks {
+  key        String @id @db.VarChar(255)
+  owner      String @db.VarChar(255)
+  expiration Int
+
+  @@index([expiration], map: "cache_locks_expiration_index")
+}
+
+model failed_jobs {
+  id         BigInt   @id @default(autoincrement())
+  uuid       String   @unique(map: "failed_jobs_uuid_unique") @db.VarChar(255)
+  connection String
+  queue      String
+  payload    String
+  exception  String
+  failed_at  DateTime @default(now()) @db.Timestamp(0)
+}
+
+model jabatan {
+  id         BigInt     @id @default(autoincrement())
+  nama       String     @db.VarChar(255)
+  created_at DateTime?  @db.Timestamp(0)
+  updated_at DateTime?  @db.Timestamp(0)
+  pengurus   pengurus[]
+}
+
+model job_batches {
+  id             String  @id @db.VarChar(255)
+  name           String  @db.VarChar(255)
+  total_jobs     Int
+  pending_jobs   Int
+  failed_jobs    Int
+  failed_job_ids String
+  options        String?
+  cancelled_at   Int?
+  created_at     Int
+  finished_at    Int?
+}
+
+model jobs {
+  id           BigInt @id @default(autoincrement())
+  queue        String @db.VarChar(255)
+  payload      String
+  attempts     Int    @db.SmallInt
+  reserved_at  Int?
+  available_at Int
+  created_at   Int
+
+  @@index([queue], map: "jobs_queue_index")
+}
+
+model kategori {
+  id         BigInt    @id @default(autoincrement())
+  nama       String    @db.VarChar(255)
+  created_at DateTime? @db.Timestamp(0)
+  updated_at DateTime? @db.Timestamp(0)
+  berita     berita[]
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model kegiatan {
+  id              String    @id @db.Uuid
+  judul           String    @db.VarChar(255)
+  deskripsi       String?
+  lokasi          String?   @db.VarChar(255)
+  gambar          Json?     @db.Json
+  status          String    @default("draft") @db.VarChar(255)
+  tanggal_mulai   DateTime? @db.Date
+  waktu_mulai     DateTime? @db.Time(0)
+  tanggal_selesai DateTime? @db.Date
+  waktu_selesai   DateTime? @db.Time(0)
+  created_at      DateTime? @db.Timestamp(0)
+  updated_at      DateTime? @db.Timestamp(0)
+}
+
+model migrations {
+  id        Int    @id @default(autoincrement())
+  migration String @db.VarChar(255)
+  batch     Int
+}
+
+model password_reset_tokens {
+  email      String    @id @db.VarChar(255)
+  token      String    @db.VarChar(255)
+  created_at DateTime? @db.Timestamp(0)
+}
+
+model pengurus {
+  id            BigInt    @id @default(autoincrement())
+  users_id      BigInt?
+  jabatan_id    BigInt?
+  bidang_id     BigInt?
+  nama          String    @db.VarChar(255)
+  angkatan      Int?
+  gambar        String?
+  tanggal_lahir DateTime? @db.Date
+  riwayat       Json?     @db.Json
+  created_at    DateTime? @db.Timestamp(0)
+  updated_at    DateTime? @db.Timestamp(0)
+  bidang        bidang?   @relation(fields: [bidang_id], references: [id], onUpdate: NoAction, map: "pengurus_bidang_id_foreign")
+  jabatan       jabatan?  @relation(fields: [jabatan_id], references: [id], onUpdate: NoAction, map: "pengurus_jabatan_id_foreign")
+  users         users?    @relation(fields: [users_id], references: [id], onUpdate: NoAction, map: "pengurus_users_id_foreign")
+}
+
+model profil {
+  id         BigInt    @id @default(autoincrement())
+  sejarah    String?
+  visi       String?
+  misi       String?
+  tujuan     String?
+  created_at DateTime? @db.Timestamp(0)
+  updated_at DateTime? @db.Timestamp(0)
+}
+
+model sessions {
+  id            String  @id @db.VarChar(255)
+  user_id       BigInt?
+  ip_address    String? @db.VarChar(45)
+  user_agent    String?
+  payload       String
+  last_activity Int
+
+  @@index([last_activity], map: "sessions_last_activity_index")
+  @@index([user_id], map: "sessions_user_id_index")
+}
+
+model users {
+  id                BigInt     @id @default(autoincrement())
+  name              String     @db.VarChar(255)
+  email             String     @unique(map: "users_email_unique") @db.VarChar(255)
+  email_verified_at DateTime?  @db.Timestamp(0)
+  password          String     @db.VarChar(255)
+  remember_token    String?    @db.VarChar(100)
+  created_at        DateTime?  @db.Timestamp(0)
+  updated_at        DateTime?  @db.Timestamp(0)
+  pengurus          pengurus[]
 }
